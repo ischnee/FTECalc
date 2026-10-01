@@ -4,17 +4,43 @@ A browser bookmarklet, built for the UW Philosophy department, that estimates **
 
 **Status: built, and tested against made-up Time Schedule pages. Not yet tried on the real Time Schedule.**
 
-## Install and run
+## Install
 
-1. Download [`FTECalc.html`](FTECalc.html). In Chrome, open the Bookmark Manager, click ⋮ and choose **Import bookmarks**, then pick the file. A bookmark named FTECalc appears under "Imported". Drag it to your bookmarks bar.
-2. Sign in and open the Time Schedule for any quarter, for example `…/students/timeschd/AUT2026/`.
-3. Click **FTECalc**. It opens in a new tab on that quarter's academic year. From a Winter, Spring or Summer page, the year menu also offers the next academic year, since its Autumn may already be published.
+A [bookmarklet](https://en.wikipedia.org/wiki/Bookmarklet) is a bookmark stored in your web browser that contains JavaScript commands that make the browser do useful work. This one only works on the UW Time Schedule, which requires UW credentials.
+
+1. In Chrome, open **Bookmarks → Bookmark Manager**.
+2. Click the **⋮** menu at the very top right of that page (not the one beside your profile icon), then **Add new bookmark**.
+3. For the name, use `FTECalc`.
+4. Paste the script below into the URL field, then click **Save**.
+
+#### Script for the bookmarklet:
+
+```
+javascript:(function(){
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/gh/ischnee/FTECalc@main/bookmarklet-ftecalc.js?t=' + Date.now();
+  s.onload = function() { console.log('[Bookmarklet] Script loaded'); };
+  s.onerror = function() { console.error('[Bookmarklet] Failed to load script'); };
+  document.body.appendChild(s);
+})();
+```
+
+This short script loads the latest FTECalc from this repository each time you click it, so you never need to reinstall it to get updates.
+
+**Prefer a fixed copy that doesn't update itself?**
+1. Download `FTECalc.html` from this repository.
+2. Import it in Chrome: Bookmark Manager → **⋮** → **Import bookmarks**.
+3. To update later, delete that bookmark and import a newer copy.
+
+## How to use
+
+1. Sign in and open the Time Schedule for any quarter, for example `…/students/timeschd/AUT2026/`.
+2. Click **FTECalc**. It opens in a new tab on that quarter's academic year. From a Winter, Spring or Summer page, the year menu also offers the next academic year, since its Autumn may already be published.
    - Clicked anywhere else, FTECalc says it's installed and gives the steps, with a button to the Time Schedule. On the Time Schedule's front page, it asks you to pick a quarter. If Chrome blocks the new tab, it says to allow pop-ups.
-4. Type one or more course prefixes, such as `PHIL, CLAS`, and press Enter. Each prefix is a program.
-5. In **Faculty and instructor loads**, set each instructor's category once. FTECalc remembers it.
-6. For a course release or an overload, change that person's **Load** for the year.
-
-The repository is private, so the bookmark carries all of the code. After an update, import the new `FTECalc.html` again.
+3. Type one or more course prefixes, such as `PHIL, CLAS`, and press Enter. Each prefix is a program.
+4. In **Faculty and instructor loads**, set each instructor's category once. FTECalc remembers it.
+5. For a course release or an overload, change that person's **Load** for the year.
+6. To keep the results, click **Save**.
 
 ## What it shows
 
@@ -147,7 +173,11 @@ All settled (Sept 29, 2026):
 
 - `bookmarklet-ftecalc.js` is the whole app. On a Time Schedule page it opens a new tab and writes the dashboard into it. The dashboard fetches each prefix's Autumn, Winter and Spring pages from the Time Schedule.
 - `node make-import.js` rebuilds `FTECalc.html` after a change.
-- `node --experimental-websocket test/run.js` runs the tests: 81 checks in headless Chrome. They use made-up PHIL and CLAS pages in the Time Schedule's format (`test/fake-time-schedule.js`), whose numbers were worked out by hand. Needs Node 20+ and Google Chrome.
+- `node --experimental-websocket test/run.js` runs the tests in headless Chrome. They use made-up PHIL and CLAS pages in the Time Schedule's format (`test/fake-time-schedule.js`), whose numbers were worked out by hand. They also run the file through a loader like the one above. Needs Node 20+ and Google Chrome.
+- **Every push reaches every user.** Everyone using the loader runs whatever is on `main` the next time they click. Keep write access to people who need it, and protect those GitHub accounts with two-factor authentication.
+- **Send updates out right away.** jsDelivr keeps a copy of the file on its servers for up to 12 hours. About a minute after pushing, open `https://purge.jsdelivr.net/gh/ischnee/FTECalc@main/bookmarklet-ftecalc.js` once, and everyone gets the new version on their next click.
+  - Wait the minute: purging in the first seconds after a push can put the old version straight back, before GitHub reports the new one.
+  - The loader's timestamp (`?t=…`) stops browsers from reusing an old copy.
 
 ## Credit
 

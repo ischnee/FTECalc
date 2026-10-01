@@ -18,6 +18,7 @@ function startServer() {
   const server = http.createServer((req, res) => {
     if (req.url === '/__signout') { signedOut = !signedOut; res.writeHead(200); return res.end(String(signedOut)); }
     if (req.url === '/__requests') { res.writeHead(200); return res.end(String(requests)); }
+    if (req.url.startsWith('/cdn/bookmarklet-ftecalc.js')) { res.writeHead(200, { 'content-type': 'application/javascript; charset=utf-8' }); return res.end(fs.readFileSync(path.join(DIR, '..', 'bookmarklet-ftecalc.js'))); }
     if (req.url === '/students/timeschd/') { res.writeHead(200, { 'content-type': 'text/html' }); return res.end('<html><body><h1>Time Schedule</h1><a href="AUT2026/">Autumn 2026</a></body></html>'); }
     if (req.url === '/elsewhere') { res.writeHead(200, { 'content-type': 'text/html' }); return res.end('<html><body><h1>Not the Time Schedule</h1></body></html>'); }
     const m = req.url.match(/^\/students\/timeschd\/([A-Z]{3}\d{4})\/(\w*\.html)?$/);
@@ -87,10 +88,12 @@ async function launch(name, port) {
   };
   tab.go = async url => { await tab.send('Page.navigate', { url }); await tab.waitFor(`document.readyState === "complete" && location.href === ${JSON.stringify(url)}`); };
   tab.runBookmarklet = () => tab.evaluate(BOOKMARKLET, true);
-  tab.openApp = async (quarter = 'AUT2026') => {
+  /* The README's loader, with its address pointed at this server (or at jsDelivr itself, given cdn). */
+  tab.runLoader = cdn => tab.evaluate(`(function(){ var s = document.createElement('script'); s.src = ${JSON.stringify(cdn || BASE + '/cdn/bookmarklet-ftecalc.js')} + '?t=' + Date.now(); document.body.appendChild(s); })()`, true);
+  tab.openApp = async (quarter = 'AUT2026', how) => {
     await tab.go(`${BASE}/students/timeschd/${quarter}/`);
     const before = new Set((await json('/json/list')).map(t => t.id));
-    await tab.runBookmarklet();
+    if (how) await how(); else await tab.runBookmarklet();
     let target;
     for (let i = 0; i < 50 && !target; i++) { target = (await json('/json/list')).find(t => t.type === 'page' && !before.has(t.id)); if (!target) await sleep(100); }
     if (!target) throw new Error('FTECalc did not open a tab');

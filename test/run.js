@@ -3,7 +3,7 @@
 // worked out by hand in fake-time-schedule.js.
 const fs = require('fs');
 const { TMP, startServer } = require('./harness.js');
-const TESTS = ['numbers', 'settings', 'privacy', 'problems', 'save'];
+const TESTS = ['numbers', 'settings', 'privacy', 'problems', 'save', 'loader'];
 
 (async () => {
   fs.mkdirSync(TMP, { recursive: true });
