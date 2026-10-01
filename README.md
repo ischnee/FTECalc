@@ -1,53 +1,138 @@
 # FTECalc
 
-A browser bookmarklet, planned for the UW Philosophy department, that estimates **teaching FTE** from the [UW Time Schedule](https://www.washington.edu/students/timeschd/). It covers everyone teaching: faculty, lecturers, graduate instructors and TAs.
+A browser bookmarklet, built for the UW Philosophy department, that estimates **teaching FTE** and **student credit hours (SCH)** from the [UW Time Schedule](https://www.washington.edu/students/timeschd/). It covers everyone teaching: faculty, lecturers, graduate instructors and TAs.
 
-**Status: in design.** Nothing here is usable yet.
+**Status: built, and tested against made-up Time Schedule pages. Not yet tried on the real Time Schedule.** Saving results is planned (see below).
 
-## What it will do
+## Install and run
 
-Run it on the Time Schedule, pick one or more course prefixes and an academic year, and it adds up each person's teaching over **Autumn, Winter and Spring**. It divides by that person's annual load to give a figure where 1.0 is one person's full teaching year.
+1. Download [`FTECalc.html`](FTECalc.html). In Chrome, open the Bookmark Manager, click ⋮ and choose **Import bookmarks**, then pick the file. A bookmark named FTECalc appears under "Imported". Drag it to your bookmarks bar.
+2. Sign in and open the Time Schedule for any quarter, for example `…/students/timeschd/AUT2026/`.
+3. Click **FTECalc**. It opens in a new tab on that quarter's academic year. (Allow pop-ups for washington.edu if Chrome asks.)
+4. Type one or more course prefixes, such as `PHIL, CLAS`, and press Enter. Each prefix is a program.
+5. In **Faculty and instructor loads**, set each instructor's category once. FTECalc remembers it.
+
+The repository is private, so the bookmark carries all of the code. After an update, import the new `FTECalc.html` again.
+
+## What it shows
+
+It serves three purposes:
+- **Fair faculty loads:** each instructor's courses against their load.
+- **TA allocation:** students per TA, by course and quarter.
+- **Comparing programs:** how each program uses its teaching resources, e.g. SCH per FTE, who teaches the SCH, and cost per SCH.
+
+The page has:
+- **A summary:** SCH (with each quarter), instructional FTE by category, SCH per FTE (with and without TAs), and cost per SCH.
+- **Programs compared:** one row per prefix plus a total. Columns: SCH, instructor FTE, TA FTE, SCH per instructor FTE, a bar of who teaches the SCH, the share taught by the top quarter of instructors, students per TA, and cost per SCH.
+- **Faculty and instructor loads:** for each person:
+  - category and load
+  - their courses in each quarter, as chips whose hover gives the section, credits and enrollment
+  - courses against load (e.g. "3.5 of 4")
+  - FTE, SCH and average class size
+  - how evenly their SCH is spread across their courses
+- **TA allocation:** each course with quiz sections, per quarter. It shows students, quiz sections, estimated TAs and students per TA. Values well above or below the median are highlighted.
+
+The **Program** menu in the header narrows the whole page to one prefix. The **⚙** menu holds the loads, the co-teaching rule, the CAS minimums and the budgets.
 
 **Summer is separate.** Summer quarter is never part of an FTE figure.
 
 ## How FTE is counted
 
-The unit is the academic year.
+The unit is the academic year: Autumn, Winter and Spring.
 
 | Who | Their FTE | Example |
 |---|---|---|
-| Faculty and lecturers | courses taught in the year ÷ their annual course load | load 4, teaching 1 + 2 + 1 → **1.0**; load 6, teaching 2 + 2 + 1 → **0.83** |
-| Graduate instructors of record | appointment % × quarters taught ÷ 3 | one Winter course at 50% → **0.17** |
-| TAs | TA positions each quarter × appointment % ÷ 3 | 20 + 16 + 14 TAs at 50% → **8.3** |
-| Unassigned courses (STAFF, TBA) | courses ÷ the default load | 2 courses at load 4 → **0.5** |
+| Tenure-track faculty | courses taught in the year ÷ 4 | teaching 1 + 2 + 1 → **1.0** |
+| Teaching-track faculty and teaching professors | courses taught in the year ÷ 6 | teaching 2 + 2 + 1 → **0.83** |
+| Graduate instructors of record | ¼ per course, like a tenure-track course | one course → **0.25** |
+| Other | courses ÷ a load you enter for that person | 3 courses at load 3 → **1.0** |
+| Not set yet | courses ÷ the default load (4) | 2 courses → **0.5** |
+| Unassigned courses (STAFF, TBA) | courses ÷ the default load | 2 courses → **0.5** |
+| TAs | ⅙ per TA per quarter (a 50% appointment for a third of the year) | 20 + 16 + 14 TAs → **8.3** |
 
-- **Loads and categories.** The Time Schedule doesn't say who is faculty, a lecturer or a graduate student, or what anyone's load is. So FTECalc will have a default annual load, plus a load and category for each instructor that you can change. These settings stay in your browser.
-- **The current year.** Until Winter and Spring are published, the current year is partial and marked that way. The most recent complete year is one click away.
+Every course counts as 1, whatever its credits or size. All the loads can be changed in ⚙.
+
+- **Categories.** The Time Schedule doesn't say who is faculty, a lecturer or a graduate student. You set each instructor's category in the Faculty table, and FTECalc keeps it in your browser. Until then they count at the default load, and the summary says how many still need one.
+- **Co-taught courses** (instructors listed as `A/B`) count ½ to each of two instructors, ⅓ to each of three, and so on. Their SCH is split the same way. ⚙ can count the course in full for each instructor instead; the SCH is still split.
+- **The current year.** Until Winter and Spring are published, the year is partial and marked that way. The academic year menu goes back seven years.
+
+## Student credit hours
+
+- **SCH** = credits × students enrolled, summed over lecture sections. Quiz sections carry no credits.
+- **Enrollment is live:** whatever the Time Schedule shows when FTECalc runs. Past quarters show their final enrollment. UW's official SCH uses 10th-day counts, so FTECalc's figures are close but not identical.
+- **Cost per SCH:** enter each program's instructional budget (GOF) in ⚙, and FTECalc divides it by that program's SCH. This is the "instructional cost per SCH" measure used in national comparisons, such as the Delaware Cost Study. Budgets stay in your browser.
 
 ## Which courses count
 
-- **Counted:**
-  - lecture sections from 100 to 500 level, including Honors sections and graduate seminars
-  - quiz sections, for estimating TAs
+- **Counted:** lecture sections (one-letter section IDs) from 100 to 599, including Honors sections and graduate seminars.
+- **Read for the TA estimate:** quiz sections.
 - **Left out:**
   - independent study (course numbers ending in 99)
   - 600, 700 and 800 level (independent study, thesis, dissertation)
-- **Counted once:** combined and joint-listed sections, such as a 4xx/5xx pair or two prefixes meeting together. Sections with the same instructor, time and room merge.
-- **Known limit:** the Time Schedule lists one instructor per section, so co-teachers are missed.
+  - sections with a limit of 0 (placeholders)
+  - sections with variable credits ("VAR"), which have no fixed credits for SCH. The summary says how many were left out.
+- **Credit ranges** such as "2-5" count the lower number.
+- **Sections with no one enrolled** still count as a course taught but add no SCH.
+- **Counted once:** combined and joint-listed sections, such as a 4xx/5xx pair or two prefixes meeting together. Sections in the same quarter with the same instructors, days, time and room merge. A joint course counts in each of its programs' rows, and once in the total.
+- **CAS minimum enrollment:** a course below the College's minimum is marked ⚠: fewer than 10 students at the 100–300 level, or fewer than 5 at the 400–500 level. Both numbers can be changed in ⚙.
+
+## How TAs are estimated
+
+This is the same estimate as in [TimeScheduleMod](https://github.com/ischnee/TimeScheduleMod):
+- A TA is a name on a quiz section other than its own lecture's instructor.
+- A TA's load is the number of quiz sections they lead that quarter, across the prefixes loaded. Each course uses its TAs' usual load.
+- Sections with students but no TA go first to TAs below that load. The rest need one more TA per usual load.
+- Empty sections with no TA aren't counted.
+
+Hover over a course's TA count to see the arithmetic.
 
 ## Privacy
 
-- **No student data.** FTECalc reads only the Time Schedule's public section listings, which UW shows after sign-in.
-- **TA names are never stored or shown.** TAs are counted from the quiz sections they lead and appear only as TA1, TA2 and so on.
-- **Instructor loads are personnel information.** Instructors of record are listed on the Time Schedule, but loads you enter stay in your browser.
+- **No student data.** FTECalc reads only the Time Schedule's section listings, which UW shows after sign-in.
+- **TA names are never stored or shown.** As each page loads, names are replaced with labels, and only counts appear.
+- **Instructor loads are personnel information.** Instructors of record are listed on the Time Schedule. The categories, loads and budgets you enter are kept only in your browser.
 
-## Open questions
+## Compared with Ben Marwick's Instructor Workload Dashboard
 
-1. What is the number for: hiring and budget cases, TA allocation, or workload balance? This decides whether TAs are part of the same total.
-2. What are Philosophy's standard annual loads for research faculty and teaching faculty? What appointment % do graduate instructors and TAs have (50%?)
-3. Does every course count as 1, or are they weighted by credits or enrollment?
-4. Should saved results include instructor loads, or only the totals?
+Ben's [Time Schedule tools](https://github.com/benmarwick/uw-anthro-web-helpers) include an Instructor Workload Dashboard that totals SCH by instructor for an academic year. FTECalc is a separate app with its own code, but it borrows several of Ben's ideas:
+- **His list of course prefixes** and their Time Schedule pages.
+- **His way of reading section lines.**
+- **Splitting co-taught sections** evenly among their instructors.
+- **The CAS minimum-enrollment warning.**
+- **How evenly an instructor's SCH is spread** across their courses ("% even"), and which course contributes most.
+- **How concentrated SCH is** among instructors (here, the share taught by the top quarter).
 
-## Background
+Where FTECalc differs:
+- **FTE, not just SCH:** categories and annual loads turn courses into FTE.
+- **TAs:** estimated from quiz sections and counted in FTE. Ben's dashboard skips quiz sections.
+- **Programs side by side,** with cost per SCH from the instructional budget.
+- **Combined and joint-listed sections count once** for load. Ben's dashboard counts each listing.
+- **Honors sections count;** Ben's dashboard leaves them out.
+- **Sections with no one enrolled** count as a course taught; Ben's dashboard skips them.
+- **STAFF and TBA** form one "Unassigned" row instead of appearing as instructors.
+- **No SCH target slider or histogram:** each person is measured against their own load instead.
 
-FTECalc grew out of the snapshot and TA-estimate work on Ben Marwick's Time Schedule Viz ([uw-anthro-web-helpers](https://github.com/benmarwick/uw-anthro-web-helpers)). It is a separate tool.
+## Saving results (planned)
+
+Saved results will include both the totals and the instructor loads, so share them only with people who should see loads.
+
+## Decisions
+
+All settled (Sept 29, 2026):
+- **Purposes:** the three above.
+- **Loads:** 4 courses a year for tenure track and 6 for teaching track. A graduate instructor counts ¼ per course. A TA counts ⅙ per quarter.
+- **Courses:** every course counts as 1.
+- **Summer:** never part of FTE.
+- **Enrollment:** live.
+- **Budget:** the instructional budget (GOF).
+- **Saved results:** include both the totals and the instructor loads.
+
+## For maintainers
+
+- `bookmarklet-ftecalc.js` is the whole app. On a Time Schedule page it opens a new tab and writes the dashboard into it. The dashboard fetches each prefix's Autumn, Winter and Spring pages from the Time Schedule.
+- `node make-import.js` rebuilds `FTECalc.html` after a change.
+- `node --experimental-websocket test/run.js` runs the tests: 52 checks in headless Chrome. They use made-up PHIL and CLAS pages in the Time Schedule's format (`test/fake-time-schedule.js`), whose numbers were worked out by hand. Needs Node 20+ and Google Chrome.
+
+## Credit
+
+FTECalc grew out of the snapshot and TA-estimate work in TimeScheduleMod, which builds on Ben Marwick's Time Schedule Viz. The course-prefix list and the way section lines are read come from Ben's tools, under the MIT license (see [LICENSE](LICENSE)).
