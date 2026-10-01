@@ -18,6 +18,7 @@ function startServer() {
   const server = http.createServer((req, res) => {
     if (req.url === '/__signout') { signedOut = !signedOut; res.writeHead(200); return res.end(String(signedOut)); }
     if (req.url === '/__requests') { res.writeHead(200); return res.end(String(requests)); }
+    if (req.url === '/students/timeschd/') { res.writeHead(200, { 'content-type': 'text/html' }); return res.end('<html><body><h1>Time Schedule</h1><a href="AUT2026/">Autumn 2026</a></body></html>'); }
     if (req.url === '/elsewhere') { res.writeHead(200, { 'content-type': 'text/html' }); return res.end('<html><body><h1>Not the Time Schedule</h1></body></html>'); }
     const m = req.url.match(/^\/students\/timeschd\/([A-Z]{3}\d{4})\/(\w*\.html)?$/);
     if (m && !m[2]) { res.writeHead(200, { 'content-type': 'text/html' }); return res.end(`<html><body><h1>Time Schedule ${m[1]}</h1></body></html>`); }
@@ -33,7 +34,7 @@ function startServer() {
 }
 const toggleSignedOut = () => fetch(BASE + '/__signout');
 
-async function connect(url) {
+async function connect(url, isBrowser) {
   const ws = new WebSocket(url);
   await new Promise(r => (ws.onopen = r));
   let id = 0; const pending = {}, listeners = [];
@@ -42,6 +43,7 @@ async function connect(url) {
   const evaluate = async (expr, gesture) => { const r = await send('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true, userGesture: !!gesture }); if (r.exceptionDetails) throw new Error(JSON.stringify(r.exceptionDetails).slice(0, 400)); return r.result ? r.result.value : r; };
   const d = { ws, send, evaluate, on: f => listeners.push(f), errors: [] };
   d.on(m => { if (m.method === 'Runtime.exceptionThrown') d.errors.push((m.params.exceptionDetails.exception || {}).description || m.params.exceptionDetails.text); });
+  if (isBrowser) return d;
   await send('Page.enable'); await send('Runtime.enable');
   await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
   d.waitFor = async (expr, tries = 60) => { for (let i = 0; i < tries; i++) { if (await d.evaluate(expr).catch(() => false)) return true; await sleep(200); } return false; };
@@ -60,16 +62,29 @@ async function connect(url) {
   return d;
 }
 
-/* A fresh headless Chrome at 1440×900. Returns the first tab, with openApp() to run the bookmarklet the way a person does:
-   on a Time Schedule quarter page, which opens FTECalc in a new tab (returned, ready once the prefixes have loaded). */
+/* A fresh headless Chrome at 1440×900, with downloads going to tmp/downloads-<name>. Returns the first tab, with openApp() to
+   run the bookmarklet the way a person does: on a Time Schedule quarter page, which opens FTECalc in a new tab (returned,
+   ready once the prefixes have loaded). */
 async function launch(name, port) {
-  const profile = path.join(TMP, 'profile-' + name);
-  fs.rmSync(profile, { recursive: true, force: true });
+  const profile = path.join(TMP, 'profile-' + name), downloads = path.join(TMP, 'downloads-' + name);
+  fs.rmSync(profile, { recursive: true, force: true }); fs.rmSync(downloads, { recursive: true, force: true }); fs.mkdirSync(downloads, { recursive: true });
   const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', `--user-data-dir=${profile}`, `--remote-debugging-port=${port}`, '--window-size=1440,900', 'about:blank'], { stdio: 'ignore' });
   const json = async p => (await fetch(`http://127.0.0.1:${port}${p}`)).json();
   for (let i = 0; i < 60; i++) { try { await json('/json/version'); break; } catch { await sleep(200); } }
+  const browser = await connect((await json('/json/version')).webSocketDebuggerUrl, true);
+  await browser.send('Browser.setDownloadBehavior', { behavior: 'allow', downloadPath: downloads, eventsEnabled: true });
   const tab = await connect((await json('/json/list')).find(t => t.type === 'page').webSocketDebuggerUrl);
   tab.kill = () => chrome.kill();
+  tab.downloads = downloads;
+  tab.downloaded = async () => { for (let i = 0; i < 80; i++) { const f = fs.readdirSync(downloads).find(x => x.endsWith('.html')); if (f) return path.join(downloads, f); await sleep(250); } return null; };
+  /* Open a saved file in a new tab, as a person would by double-clicking it. */
+  tab.openFile = async file => {
+    const target = await (await fetch(`http://127.0.0.1:${port}/json/new?` + encodeURI('file://' + file), { method: 'PUT' })).json();
+    const d = await connect(target.webSocketDebuggerUrl);
+    await d.waitFor('document.readyState === "complete" && !!document.getElementById("summary")');
+    await sleep(300);
+    return d;
+  };
   tab.go = async url => { await tab.send('Page.navigate', { url }); await tab.waitFor(`document.readyState === "complete" && location.href === ${JSON.stringify(url)}`); };
   tab.runBookmarklet = () => tab.evaluate(BOOKMARKLET, true);
   tab.openApp = async (quarter = 'AUT2026') => {

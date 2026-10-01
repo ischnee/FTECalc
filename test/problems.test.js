@@ -5,9 +5,17 @@ module.exports = async (check, port) => {
   try {
     await tab.go(BASE + '/elsewhere');
     await tab.runBookmarklet();
-    check('off the Time Schedule: a notice saying where to run it', /Open the UW Time Schedule for any quarter/.test(await tab.evaluate('(document.getElementById("ftecalc-notice") || {}).textContent || ""')));
+    const notice = () => tab.evaluate('(() => { const n = document.getElementById("ftecalc-notice"); if (!n) return null; const a = n.querySelector("a.go"); return { head: n.querySelector("#ftecalc-notice-head").textContent, msg: n.querySelector(".msg").textContent, link: a.style.display === "none" ? null : a.textContent + " " + a.href }; })()');
+    let n = await notice();
+    check('off the Time Schedule: says it’s installed, and the steps', n && n.head === 'FTECalc successfully installed' && n.msg === 'Open the UW Time Schedule: sign in with your UW NetID, pick any quarter (for example Autumn 2026), then click FTECalc again.', n);
+    check('…with a button to the Time Schedule', n && n.link === 'Open the Time Schedule https://www.washington.edu/students/timeschd/', n);
     await tab.key('Escape', 'Escape', 27);
     check('Escape closes the notice', await tab.evaluate('!document.getElementById("ftecalc-notice")'));
+    await tab.go(BASE + '/students/timeschd/');
+    await tab.runBookmarklet();
+    n = await notice();
+    check('on the Time Schedule’s front page: pick a quarter', n && n.msg === 'Pick a quarter on this page (any quarter in the academic year you want), then click FTECalc again.' && !n.link, n);
+    await tab.key('Enter', 'Enter', 13);
     await tab.go(BASE + '/students/timeschd/AUT2026/');
     await tab.evaluate(require('fs').readFileSync(require('path').join(__dirname, '..', 'bookmarklet-ftecalc.js'), 'utf8').slice('javascript:'.length), false);
     check('pop-up blocked: a notice saying to allow pop-ups', /Pop-up blocked/.test(await tab.evaluate('(document.getElementById("ftecalc-notice") || {}).textContent || ""')));

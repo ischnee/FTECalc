@@ -9,17 +9,22 @@ javascript:(function(){
        instructor's SCH is spread, and how concentrated a program's SCH is. Design notes are in the README. */
     /* Each course prefix and its Time Schedule page, from Ben Marwick's Time Schedule tools. */
     var PREFIXES = {"A A":"aa.html","A E":"ae.html","A S":"88aerosci.html","AAS":"asamst.html","ACADEM":"academ.html","ACCTG":"acctg.html","ADMIN":"admin.html","AES":"aes.html","AFRAM":"afamst.html","AIS":"ais.html","AMATH":"appmath.html","AMHAR":"amhar.html","ANEST":"anest.html","ANTH":"anthro.html","ARAB":"arabic.html","ARAMIC":"aramic.html","ARCH":"archit.html","ARCHY":"archeo.html","ARCTIC":"arctic.html","ART":"art.html","ART H":"arthis.html","ARTS":"arts.html","ARTSCI":"artsci.html","ASIAN":"asianll.html","ASL":"asl.html","ASTBIO":"astbio.html","ASTR":"astro.html","ATMOS":"atmoscs.html","B A":"ba.html","B CMU":"buscomm.html","B E":"be.html","B ECON":"busecon.html","B H":"bh.html","B POL":"bpol.html","B STR":"biostruct.html","BA RM":"barm.html","BATY E":"batye.html","BCMS":"bcms.html","BENG":"beng.html","BIBHEB":"bibheb.html","BIME":"bime.html","BIO A":"bioanth.html","BIOC":"bioch.html","BIOEN":"bioeng.html","BIOL":"biology.html","BIOST":"biostat.html","BPSD":"bpsd.html","BULGR":"bulgar.html","BUS AN":"busan.html","C ENV":"cenv.html","C LIT":"complit.html","C MED":"compmed.html","CEE":"cee.html","CEP":"commenv.html","CESG":"cesg.html","CESI":"cesi.html","CET":"cet.html","CEWA":"cewa.html","CFRM":"cfrm.html","CHEM":"chem.html","CHEM E":"cheng.html","CHGTAI":"chgtai.html","CHID":"chid.html","CHIN":"chinese.html","CHSTU":"chist.html","CL AR":"clarch.html","CL LI":"cling.html","CLAS":"clas.html","CM":"constmgmt.html","CMS":"cms.html","COM":"com.html","COMMLD":"commld.html","CONJ":"conj.html","COPTIC":"coptic.html","CS&SS":"cs&ss.html","CSDE":"csde.html","CSE":"cse.html","CSE D":"csed.html","CZECH":"czech.html","D HYG":"denthy.html","DANCE":"dance.html","DANISH":"danish.html","DATA":"data.html","DENT":"dent.html","DENTCL":"dentcl.html","DENTEL":"dentel.html","DENTFN":"dentfn.html","DENTGP":"dentgp.html","DENTPC":"dentpc.html","DENTSL":"dentsl.html","DERM":"derm.html","DESIGN":"design.html","DIS ST":"disst.html","DPHS":"dphs.html","DRAMA":"drama.html","DXARTS":"dxarts.html","E E":"ee.html","EBIZ":"ebiz.html","ECE":"ece.html","ECFS":"ecfs.html","ECON":"econ.html","EDC&I":"edci.html","EDLPS":"edlp.html","EDPSY":"edpsy.html","EDSPE":"sped.html","EDTEP":"teached.html","EDUC":"indsrf.html","EGYPT":"egypt.html","ENDO":"endo.html","ENGL":"engl.html","ENGR":"engr.html","ENTRE":"entre.html","ENV H":"envh.html","ENVIR":"envst.html","EPI":"epidem.html","ESMS":"esms.html","ESRM":"esrm.html","ESS":"ess.html","ESTO":"eston.html","ETHICS":"ethics.html","FAMED":"famed.html","FHL":"fhl.html","FIN":"finance.html","FINN":"finnish.html","FISH":"fish.html","FRENCH":"french.html","G H":"gh.html","GCNSL":"gcnsl.html","GEEZ":"geez.html","GEN ST":"genst.html","GENOME":"genome.html","GEOG":"geog.html","GEORG":"georg.html","GERMAN":"germ.html","GIS":"gis.html","GLITS":"glits.html","GRDSCH":"grad.html","GREEK":"greek.html","GWSS":"gwss.html","HCDE":"hcde.html","HCID":"hcid.html","HCSS":"hcss.html","HDD":"hdd.html","HEBR":"hebrew.html","HEOR":"heor.html","HIHIM":"95hihim.html","HINDI":"hindi.html","HMS":"hms.html","HONORS":"hnrs.html","HPS":"hps.html","HRMOB":"hrmob.html","HSERV":"hlthsvcs.html","HSMGMT":"hsmgmt.html","HSTAA":"histam.html","HSTAFM":"hstafm.html","HSTAM":"ancmedh.html","HSTAS":"histasia.html","HSTCMP":"hstcmp.html","HSTEU":"modeuro.html","HSTLAC":"hstlac.html","HSTRY":"hstry.html","HUBIO":"humbio.html","HUM":"centhum.html","I BUS":"intlbus.html","I S":"infosys.html","ICEL":"icel.html","IECMH":"iecmh.html","IMMUN":"immun.html","IMT":"imt.html","IND E":"inde.html","INDIV":"indiv.html","INDN":"indian.html","INDO":"indo.html","INFO":"info.html","INSC":"insc.html","INTSCI":"intsci.html","IPHD":"iphd.html","IPM":"ipm.html","ITAL":"italian.html","JAPAN":"japanese.html","JEW ST":"jewst.html","JSIS":"jsis.html","JSIS A":"jsisa.html","JSIS B":"jsisb.html","JSIS C":"jsisc.html","JSIS D":"jsisd.html","JSIS E":"jsise.html","KAZAKH":"kazakh.html","KHMER":"khmer.html","KOREAN":"korean.html","KYRGYZ":"kyrgyz.html","L ARCH":"landscape.html","LAB M":"labmed.html","LABOR":"labor.html","LADINO":"ladino.html","LATIN":"latin.html","LATV":"latvian.html","LAW":"law.html","LAW A":"lawa.html","LAW B":"lawb.html","LAW C":"lawc.html","LAW E":"lawe.html","LAW H":"lawh.html","LAW P":"lawp.html","LAW T":"lawt.html","LEAD":"lead.html","LING":"ling.html","LIS":"lis.html","LIT":"lit.html","LITH":"lith.html","LSJ":"lsj.html","M E":"meche.html","M SCI":"88milsci.html","MARBIO":"marbio.html","MATH":"math.html","MCB":"mcb.html","MED":"medicine.html","MED EM":"medem.html","MEDCH":"medchem.html","MEDECK":"medeck.html","MEDENG":"medeng.html","MEDLIC":"medlic.html","MEDRCK":"medrck.html","MEDSCI":"medsci.html","MEIE":"meie.html","MELC":"melc.html","MGMT":"mgmt.html","MICROM":"microbio.html","MKTG":"mktg.html","MODHEB":"modheb.html","MOLENG":"moleng.html","MOLMED":"molmed.html","MS E":"mse.html","MSIS":"msis.html","MSTP":"mstp.html","MSW":"socwk.html","MUHST":"mushist.html","MUSAP":"appmus.html","MUSED":"mused.html","MUSEN":"musensem.html","MUSEUM":"museum.html","MUSIC":"music.html","MUSICP":"musicp.html","MUSTEC":"mustec.html","N SCI":"88navsci.html","N&MES":"nearmide.html","NBIO":"nbio.html","NCLIN":"nursingcl.html","NEUBIO":"neubio.html","NEUR S":"neurosurg.html","NEURL":"neurl.html","NEURO":"neuro.html","NEUSCI":"neusci.html","NME":"nme.html","NMETH":"nursingmeth.html","NORW":"norweg.html","NSG":"nsg.html","NURS":"nursing.html","NUTR":"nutrit.html","O E":"orgenv.html","O S":"os.html","OB GYN":"obgyn.html","OCEAN":"ocean.html","OHS":"ohs.html","OPHTH":"ophthal.html","OPMGT":"opmgmt.html","ORALB":"oralbio.html","ORALM":"oralm.html","ORTHO":"orthod.html","ORTHP":"orthop.html","OTOHN":"otol.html","P BIO":"physiolbio.html","PABIO":"pathobio.html","PATH":"patho.html","PBSCI":"psychbehav.html","PCEUT":"pharmceu.html","PEDO":"pedodon.html","PEDS":"pediat.html","PERIO":"perio.html","PHARBE":"pharbe.html","PHARM":"pharmacy.html","PHARMP":"pharmp.html","PHCOL":"pharma.html","PHG":"phg.html","PHI":"phi.html","PHIL":"phil.html","PHRMCY":"phrmcy.html","PHRMPR":"phrmpr.html","PHRMRA":"phrmra.html","PHRMSC":"phrmsc.html","PHYS":"phys.html","POL S":"polisci.html","POLSH":"polish.html","PORT":"port.html","PPM":"ppm.html","PROS":"pros.html","PRSAN":"persian.html","PSYCAP":"95psycap.html","PSYCH":"psych.html","PSYCLN":"psycln.html","PUBPOL":"pubpol.html","PUBSCH":"pubsch.html","Q SCI":"quantsci.html","QERM":"quante.html","QMETH":"qmeth.html","QUAT":"qrc.html","R E":"re.html","R ONC":"radonc.html","RADGY":"radiol.html","REHAB":"rehab.html","RELIG":"religion.html","RES D":"restor.html","RHB PO":"rhbpo.html","ROMN":"romanian.html","RUSS":"russian.html","S ASIA":"sasian.html","SBSE":"sbse.html","SCAND":"scand.html","SCM":"scm.html","SEASIA":"seasia.html","SEFS":"sefs.html","SLAVIC":"slavic.html","SLVN":"slvn.html","SMEA":"smea.html","SNKRT":"sanskrit.html","SOC":"soc.html","SOC WF":"socwlbasw.html","SOC WL":"socwl.html","SOCSCI":"socsci.html","SPAN":"spanish.html","SPH":"sph.html","SPHSC":"sphsc.html","SPLING":"spanlin.html","ST MGT":"stratm.html","STAT":"stat.html","STSS":"stss.html","SURG":"surg.html","SWA":"swa.html","SWED":"swedish.html","TAGLG":"taglg.html","TECHIN":"techin.html","THAI":"thai.html","TKISH":"turkish.html","TURKIC":"turkc.html","TXTDS":"txtds.html","UCONJ":"uconjoint.html","UGARIT":"ugarit.html","UKR":"ukrain.html","URBAN":"urban.html","URBDP":"urbdes.html","URDU":"urdu.html","UROL":"uro.html","UYGUR":"uygur.html","UZBEK":"uzbek.html","VIET":"viet.html"};
-    function notice(msg){
+    /* FTECalc's own message box, shown inside the page: lower down than a browser alert, and headed so a first-time user knows
+       the bookmarklet is installed and working (as in MyGradMod). OK, Enter, Escape or a click outside closes it. An optional
+       link button takes the person where they need to go. */
+    function notice(msg, link){
         var old = document.getElementById("ftecalc-notice");
         if(old) old.remove();
         var shade = document.createElement("div");
         shade.id = "ftecalc-notice";
         shade.style.cssText = "position:fixed;inset:0;z-index:2147483647;background:rgba(30,16,60,.28);display:flex;justify-content:center;align-items:flex-start;padding-top:32vh";
-        shade.innerHTML = "<div role='alertdialog' style='width:min(440px,calc(100vw - 40px));background:#fff;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.35);overflow:hidden;font:15px/1.45 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#222'>"
-            + "<div style='background:#2e1a5c;color:#fff;font-size:12px;font-weight:600;letter-spacing:.04em;padding:8px 16px'>FTECalc</div>"
+        shade.innerHTML = "<div role='alertdialog' aria-labelledby='ftecalc-notice-head' style='width:min(440px,calc(100vw - 40px));background:#fff;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.35);overflow:hidden;font:15px/1.45 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,sans-serif;color:#222'>"
+            + "<div id='ftecalc-notice-head' style='background:#4b2e83;color:#fff;font-size:12px;font-weight:600;letter-spacing:.04em;padding:8px 16px'>FTECalc successfully installed</div>"
             + "<div class='msg' style='padding:16px 18px 4px'></div>"
-            + "<div style='padding:10px 18px 16px;text-align:right'><button type='button' style='background:#2e1a5c;color:#fff;border:0;border-radius:16px;padding:6px 20px;font:inherit;font-weight:600;cursor:pointer'>OK</button></div></div>";
+            + "<div style='padding:10px 18px 16px;display:flex;justify-content:flex-end;align-items:center;gap:10px'><a class='go' style='display:none;color:#4b2e83;border:1px solid #4b2e83;border-radius:16px;padding:5px 16px;font-weight:600;text-decoration:none'></a>"
+            + "<button type='button' style='background:#4b2e83;color:#fff;border:0;border-radius:16px;padding:6px 20px;font:inherit;font-weight:600;cursor:pointer'>OK</button></div></div>";
         shade.querySelector(".msg").textContent = msg;
+        if(link){ var a = shade.querySelector(".go"); a.href = link.href; a.textContent = link.label; a.style.display = "inline-block"; }
         var onKey = function(e){ if(e.key === "Escape" || e.key === "Enter"){ e.preventDefault(); close(); } };
         var close = function(){ shade.remove(); document.removeEventListener("keydown", onKey, true); };
         shade.addEventListener("click", function(e){ if(e.target === shade || e.target.tagName === "BUTTON") close(); });
@@ -29,12 +34,15 @@ javascript:(function(){
     }
     var at = location.href.match(/^(.*\/timeschd\/)(AUT|WIN|SPR|SUM)(\d{4})/i);
     if(!at){
-        notice("Open the UW Time Schedule for any quarter (for example …/students/timeschd/AUT2026/), then click FTECalc again.");
+        /* On the Time Schedule's front page, which lists the quarters: pick one. Anywhere else: go there first. */
+        if(/\/timeschd\/?(index\.html?)?$/i.test(location.pathname)) notice("Pick a quarter on this page (any quarter in the academic year you want), then click FTECalc again.");
+        else notice("Open the UW Time Schedule: sign in with your UW NetID, pick any quarter (for example Autumn 2026), then click FTECalc again.", { href: "https://www.washington.edu/students/timeschd/", label: "Open the Time Schedule" });
         return;
     }
-    /* The academic year of the page: Autumn starts one; Winter, Spring and Summer belong to the one that began the Autumn before. */
-    var pageQ = at[2].toUpperCase(), pageY = parseInt(at[3], 10);
-    var cfg = { base: at[1], startAY: pageQ === "AUT" ? pageY : pageY - 1, lookup: PREFIXES };
+    /* The academic year of the page: Autumn starts one; Winter, Spring and Summer belong to the one that began the Autumn before.
+       From Winter on, next Autumn may already be published, so the year menu also offers the next academic year. */
+    var pageQ = at[2].toUpperCase(), pageY = parseInt(at[3], 10), startAY = pageQ === "AUT" ? pageY : pageY - 1;
+    var cfg = { base: at[1], startAY: startAY, newestAY: pageQ === "AUT" ? startAY : startAY + 1, lookup: PREFIXES };
     var w = window.open("", "_blank");
     if(!w){
         notice("Pop-up blocked! Allow pop-ups for this site, then click FTECalc again.");
@@ -66,9 +74,30 @@ javascript:(function(){
         + '.cc{display:inline-block;border:1px solid #cfc5e6;border-radius:10px;padding:0 7px;margin:1px 3px 1px 0;font-size:12px;color:#2e1a5c;background:#fff;white-space:nowrap;cursor:help}.cc.none{border-style:dashed;color:#bbb;cursor:default}.cc sup{font-size:9px;margin-left:1px}'
         + '.pill{display:inline-block;border-radius:10px;padding:1px 8px;font-size:12px;font-weight:600;white-space:nowrap}.under{background:#e0ecff;color:#1d4ed8}.at{background:#e7f6ec;color:#15803d}.over{background:#fef3c7;color:#92400e}.plain{color:#444;font-weight:normal}'
         + '.flag-hi{background:#fef3c7;color:#92400e;border-radius:4px;padding:1px 6px;font-weight:600}.flag-lo{background:#e0ecff;color:#1d4ed8;border-radius:4px;padding:1px 6px;font-weight:600}'
-        + 'select.cat{font:inherit;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:1px 3px;background:#fff}select.cat.unset{color:#9a6a87;border-color:#e2b6c8;background:#fbf3f7}input.load{width:44px;font:inherit;font-size:12px;padding:1px 4px;border:1px solid #ddd;border-radius:4px}'
+        + 'select.cat{font:inherit;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:1px 3px;background:#fff}select.cat.unset{color:#9a6a87;border-color:#e2b6c8;background:#fbf3f7}input.load{width:46px;font:inherit;font-size:12px;padding:1px 4px;border:1px solid #ddd;border-radius:4px;text-align:right}input.load.adj{background:#efe9f9;border-color:#9d86d6;color:#2e1a5c;font-weight:700}'
         + 'tr.unassigned td{color:#666;font-style:italic}.dim{color:#888;font-weight:normal}'
         + 'footer{margin:0 25px 25px;font-size:12px;color:#666;line-height:1.5}'
+        + '.panel-toggle{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;display:inline-flex;align-items:center}.panel-toggle .chev{display:inline-block;width:20px;font-size:13px;transition:transform .15s}'
+        + '.panel.collapsed .body,.panel.collapsed h2 .sub{display:none}.panel.collapsed .panel-toggle .chev{transform:rotate(-90deg)}'
+        + '#save-btn{margin-left:auto;display:inline-flex;align-items:center;gap:7px;background:#fff;color:#4b2e83;border:0;border-radius:16px;padding:6px 14px;font:600 13px inherit;font-family:inherit;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.2)}'
+        + '#save-btn:hover{background:#f0ebfa}#save-btn:disabled{opacity:.55;cursor:default}#save-btn svg,.dlg-save svg{width:15px;height:15px;flex:none}#save-btn+#settings-btn{margin-left:0}'
+        + '.shade{position:fixed;inset:0;background:rgba(30,16,60,.35);z-index:1000;display:flex;justify-content:center;align-items:flex-start;padding-top:90px}'
+        + '.dlg{width:min(560px,calc(100vw - 32px));background:#fff;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.35);overflow:hidden}'
+        + '.dlg h2{margin:0;background:#4b2e83;color:#fff;font-size:15px;font-weight:600;padding:8px 12px 8px 20px;display:flex;justify-content:space-between;align-items:center}'
+        + '.dlg-x{background:none;border:0;color:#fff;font-size:20px;line-height:1;cursor:pointer;opacity:.75;padding:2px 7px;border-radius:4px}.dlg-x:hover{opacity:1;background:rgba(255,255,255,.15)}'
+        + '.dlg-body{padding:16px 22px 4px;font-size:13px}.dlg-row{display:grid;grid-template-columns:92px 1fr;gap:10px;align-items:start;margin-bottom:14px}'
+        + '.dlg-row>b{color:#4b2e83;font-size:12px;text-transform:uppercase;letter-spacing:.5px;padding-top:6px}'
+        + '#save-note{width:100%;box-sizing:border-box;border:2px solid #b7a57a;border-radius:6px;padding:8px 10px;font:inherit;font-size:15px}#save-note:focus{outline:none;border-color:#4b2e83}'
+        + '.picks{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}.picks button{border:1px solid #4b2e83;background:#fff;color:#4b2e83;border-radius:14px;padding:2px 10px;font:inherit;font-size:12px;font-weight:600;cursor:pointer}'
+        + '.picks button:hover{background:#e8e3d3}.picks button.on{background:#4b2e83;color:#fff}.dlg-val{padding-top:5px;line-height:1.55}.dlg-check{display:block;margin-top:5px;color:#333;cursor:pointer}.dlg-check input{margin:0 6px 0 0;vertical-align:-2px}'
+        + '.dlg-file{font-family:Menlo,Consolas,monospace;font-size:12px;background:#f4f2f8;border-radius:5px;padding:6px 9px;margin-top:3px;overflow-wrap:anywhere}'
+        + '.dlg-status{min-height:18px;font-size:12px;font-weight:600;color:#4b2e83;margin:-4px 0 4px}.dlg-status.err{color:#b91c1c}'
+        + '.dlg-foot{display:flex;justify-content:flex-end;gap:10px;padding:8px 22px 18px}.dlg-foot button{font:inherit;font-size:13px;font-weight:600;border-radius:16px;padding:7px 16px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}'
+        + '.dlg-cancel{background:#fff;border:1px solid #bbb;color:#444}.dlg-save{background:#4b2e83;border:0;color:#fff}.dlg-foot button:disabled{opacity:.6;cursor:default}'
+        + '.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#2e1a5c;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;box-shadow:0 6px 20px rgba(0,0,0,.3);z-index:1001;max-width:calc(100vw - 40px)}'
+        + '.saved-banner{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#fbf6e6;border-bottom:1px solid #e6d9b0;padding:9px 25px;font-size:14px;color:#3d2f0e}'
+        + '.saved-tag{background:#85754d;color:#fff;font-size:11px;font-weight:700;letter-spacing:.08em;border-radius:4px;padding:3px 8px}.saved-note{font-weight:700;font-size:15px;color:#2e1a5c}.saved-meta{color:#6b5a2a}'
+        + '.saved-right{margin-left:auto;font-size:12px;color:#85754d;cursor:help}.is-saved #prefix-input,.is-saved #save-btn,.is-saved .chip button{display:none}.is-saved #save-btn+#settings-btn{margin-left:auto}#chips{display:inline-flex;flex-wrap:wrap;gap:6px}.is-saved .chip{padding-right:11px}'
         + '@media (max-width:600px){header{padding:12px 16px}.bar,.summary,.panel{margin-left:16px;margin-right:16px}footer{margin:0 16px 16px}#settings{right:16px;width:calc(100vw - 32px)}.set-grid{grid-template-columns:1fr}}'
         + '</style></head><body>';
     w.document.open();
@@ -82,15 +111,28 @@ javascript:(function(){
         var CAT_COLOR = { tt: "#4b2e83", teach: "#9d86d6", grad: "#d9b44a", other: "#6f9fc9", unset: "#e2b6c8", unassigned: "#c9c9cf" };
         var DEFAULTS = { ttLoad: 4, teachLoad: 6, unsetLoad: 4, gradShare: 0.25, taPerQuarter: 6, coteach: "split", casLower: 10, casUpper: 5 };
 
-        /* What's kept in this browser: settings, each instructor's category (and load for "Other"), budgets, and the prefixes. */
-        function load(key, fallback){ try { var v = JSON.parse(localStorage.getItem(key)); return v === null || v === undefined ? fallback : v; } catch(e){ return fallback; } }
-        function store(key, v){ try { localStorage.setItem(key, JSON.stringify(v)); } catch(e){} }
+        /* A saved file (see Save below) opens with its own data and choices, and never reads or writes this browser's storage. */
+        var saved = cfg.saved || null;
+        /* What's kept in this browser: settings, each instructor's category (and any change to their load, by academic year),
+           budgets, the prefixes, and which panels are collapsed. */
+        function load(key, fallback){ if(saved) return fallback; try { var v = JSON.parse(localStorage.getItem(key)); return v === null || v === undefined ? fallback : v; } catch(e){ return fallback; } }
+        function store(key, v){ if(saved) return; try { localStorage.setItem(key, JSON.stringify(v)); } catch(e){} }
         var settings = Object.assign({}, DEFAULTS, load("ftecalc-settings", {}));
         var people = load("ftecalc-people", {});
         var budgets = load("ftecalc-budgets", {});
         var prefixes = load("ftecalc-prefixes", []).filter(function(p){ return cfg.lookup[p]; });
         var view = { ay: cfg.startAY, program: "all", facSort: "cat" };
         var cache = {};
+        var HEAD = document.head.outerHTML;   /* this page's head (title and styles), for saved files */
+        if(saved){
+            settings = Object.assign({}, DEFAULTS, saved.settings);
+            people = saved.people || {};
+            budgets = saved.budgets || {};
+            prefixes = saved.prefixes.slice();
+            view.ay = saved.ay;
+            view.program = saved.program || "all";
+            prefixes.forEach(function(p){ var e = cache[saved.ay + "|" + p] = Object.assign({ done: true, at: saved.dataAsOf }, saved.pages[p]); e.ready = Promise.resolve(); });
+        }
 
         function esc(s){ return String(s === null || s === undefined ? "" : s).replace(/[&<>"']/g, function(c){ return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
         function ayLabel(ay){ return ay + "–" + String(ay + 1).slice(2); }
@@ -99,6 +141,7 @@ javascript:(function(){
         function f2(n){ return (Math.round(n * 100) / 100).toFixed(2); }
         function money(n){ return "$" + Math.round(n).toLocaleString("en-US"); }
         function andList(xs){ return xs.length > 1 ? xs.slice(0, -1).join(", ") + " and " + xs[xs.length - 1] : xs.join(""); }
+        function fmtWhen(iso){ var d = new Date(iso); return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) + ", " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }); }
         function plural(n, one, many){ return n + " " + (n === 1 ? one : (many || one + "s")); }
 
         /* ---- Reading Time Schedule pages (after Ben Marwick's parser) ----
@@ -170,20 +213,18 @@ javascript:(function(){
                     if(!r.ok) return { status: "missing", lectures: [], quizzes: [], varSkipped: 0 };
                     return r.text().then(function(t){ var pg = parsePage(t, prefix); labelQuizzes(pg); pg.status = pg.lectures.length ? "ok" : "empty"; return pg; });
                 }).catch(function(){ return { status: "error", lectures: [], quizzes: [], varSkipped: 0 }; }).then(function(pg){ entry[q] = pg; });
-            })).then(function(){ entry.done = true; });
+            })).then(function(){ entry.done = true; entry.at = new Date().toISOString(); });
             return entry.ready;
         }
 
         /* ---- Counting ---- */
         function catOf(name){ var p = people[name]; return p && CATS[p.cat] && p.cat !== "unassigned" ? p.cat : "unset"; }
-        function loadOf(person){
-            if(person.cat === "tt") return settings.ttLoad;
-            if(person.cat === "teach") return settings.teachLoad;
-            if(person.cat === "grad") return 1 / settings.gradShare;
-            if(person.cat === "other") return (people[person.name] && +people[person.name].load) || settings.unsetLoad;
-            return settings.unsetLoad;
-        }
-        function fteOf(person){ return person.count / loadOf(person); }
+        /* A category's annual load. A grad instructor's course counts gradShare, i.e. a load of 1 / gradShare. */
+        function baseLoad(cat){ return cat === "tt" ? settings.ttLoad : cat === "teach" ? settings.teachLoad : cat === "grad" ? 1 / settings.gradShare : settings.unsetLoad; }
+        /* A person's change to their load in the year shown: -1 for a course release, +1 for an overload. It changes what
+           their courses are measured against ("3 of 3"), not their FTE, which is teaching delivered: courses ÷ the category's
+           load. So a release shows as less teaching FTE, as it should when comparing programs. */
+        function adjOf(name){ var a = people[name] && people[name].adj; return (a && +a[view.ay]) || 0; }
         function mostCommon(values, prefer){
             var n = {};
             values.forEach(function(v){ n[v] = (n[v] || 0) + 1; });
@@ -235,7 +276,12 @@ javascript:(function(){
                 });
             });
             a.persons = Object.keys(persons).map(function(k){ return persons[k]; });
-            a.persons.forEach(function(p){ p.fte = fteOf(p); p.load = loadOf(p); });
+            a.persons.forEach(function(p){
+                p.base = baseLoad(p.cat);
+                p.adj = p.cat === "grad" || p.cat === "unassigned" ? 0 : adjOf(p.name);
+                p.load = p.base + p.adj;
+                p.fte = p.count / p.base;
+            });
             a.fteByCat = {};
             CAT_ORDER.forEach(function(c){ a.fteByCat[c] = 0; });
             var schByCat = {};
@@ -293,20 +339,30 @@ javascript:(function(){
 
         /* ---- Page ---- */
         var ayOptions = [];
-        for(var y = cfg.startAY; y > cfg.startAY - 7; y--) ayOptions.push(y);
+        if(saved) ayOptions.push(saved.ay);
+        else for(var y = cfg.newestAY || cfg.startAY; y > cfg.startAY - 7; y--) ayOptions.push(y);
+        var ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M2.5 13.5h11"/></svg>';
+        var PANELS = [["programs", "Programs compared", "how each program uses its teaching resources"], ["faculty", "Faculty and instructor loads", "courses against each person’s load"], ["tas", "TA allocation", "students per TA, by course and quarter"]];
         document.body.innerHTML = "<header><h1>FTECalc</h1>"
-            + "<span class='ctl'>Academic year <select id='ay' aria-label='Academic year'>" + ayOptions.map(function(y){ return "<option value='" + y + "'>" + ayLabel(y) + " (Aut, Win, Spr)</option>"; }).join("") + "</select></span>"
+            + "<span class='ctl'>Academic year <select id='ay' aria-label='Academic year'" + (saved ? " disabled title='A saved file keeps one academic year'" : "") + ">" + ayOptions.map(function(y){ return "<option value='" + y + "'>" + ayLabel(y) + " (Aut, Win, Spr)</option>"; }).join("") + "</select></span>"
             + "<span class='ctl'>Program <select id='program' aria-label='Program' title='Show one program throughout the page'><option value='all'>All programs</option></select></span>"
+            + "<button type='button' id='save-btn' disabled title='Add a prefix first'>" + ICON + "Save</button>"
             + "<button type='button' id='settings-btn' aria-expanded='false' aria-controls='settings' aria-label='Settings' title='Settings'>⚙</button>"
             + "<div id='settings' hidden></div></header>"
+            + (saved ? "<div class='saved-banner'><span class='saved-tag'>SAVED</span>" + (saved.note ? "<span class='saved-note'>" + esc(saved.note) + "</span>" : "")
+                + "<span class='saved-meta'>" + ayLabel(saved.ay) + " · " + esc(saved.prefixes.join(", ")) + (saved.dataAsOf ? " · data as of " + esc(fmtWhen(saved.dataAsOf)) : "") + "</span>"
+                + "<span class='saved-right' title='This file keeps the numbers and choices from when it was saved. Changes made here aren’t kept. Run FTECalc on the Time Schedule for today’s numbers.'>Saved " + esc(fmtWhen(saved.savedAt)) + " · numbers don’t update</span></div>" : "")
             + "<div class='bar'><strong>Prefixes</strong><span id='chips'></span><input id='prefix-input' placeholder='Add a prefix, e.g. PHIL' spellcheck='false' autocomplete='off' title='One or more course prefixes, comma-separated; each prefix is a program'><span id='load-status'></span></div>"
             + "<div class='summary' id='summary'></div>"
-            + "<div class='panel' id='panel-programs'><h2>Programs compared <span class='sub'>how each program uses its teaching resources</span></h2><div class='body' id='programs'></div></div>"
-            + "<div class='panel' id='panel-faculty'><h2>Faculty and instructor loads <span class='sub'>courses against each person’s annual load</span></h2><div class='body' id='faculty'></div></div>"
-            + "<div class='panel' id='panel-tas'><h2>TA allocation <span class='sub'>students per TA, by course and quarter</span></h2><div class='body' id='tas'></div></div>"
-            + "<footer>Reads only the Time Schedule’s section listings: no student data, and TAs are counted, never named. Categories, loads and budgets stay in this browser. Summer is never counted. "
+            + PANELS.map(function(x){
+                return "<div class='panel' id='panel-" + x[0] + "'><h2><button type='button' class='panel-toggle' data-panel='" + x[0] + "' aria-expanded='true' aria-controls='" + x[0] + "' title='Collapse or expand this section'><span class='chev'>▼</span>" + x[1] + "</button>"
+                    + " <span class='sub'>" + x[2] + "</span></h2><div class='body' id='" + x[0] + "'></div></div>";
+            }).join("")
+            + "<footer>Reads only the Time Schedule’s section listings: no student data, and TAs are counted, never named. " + (saved ? "Categories, loads and budgets are as saved. " : "Categories, loads and budgets stay in this browser. ") + "Summer is never counted. "
             + "<span title='Past quarters show final enrollment. UW’s official SCH uses 10th-day counts, so these figures are close but not identical.'>Enrollment is live.</span></footer>";
 
+        if(saved) document.body.classList.add("is-saved");
+        document.getElementById("ay").value = String(view.ay);
         function status(text, warn){ var el = document.getElementById("load-status"); el.textContent = text || ""; el.classList.toggle("warn", !!warn); }
         function renderChips(){
             document.getElementById("chips").innerHTML = prefixes.map(function(p){ return "<span class='chip'>" + esc(p) + "<button type='button' data-remove='" + esc(p) + "' aria-label='Remove " + esc(p) + "'>×</button></span>"; }).join("");
@@ -386,18 +442,21 @@ javascript:(function(){
                 return order(x) - order(y) || x.name.localeCompare(y.name);
             });
             var th = function(key, label, cls){ return "<th" + (cls ? " class='" + cls + "'" : "") + (key ? " data-sort='" + key + "' title='Sort'" : "") + ">" + label + (view.facSort === key ? " ▾" : "") + "</th>"; };
-            el.innerHTML = "<table><thead><tr>" + th("name", "Instructor") + th("cat", "Category") + "<th class='n'>Load</th>" + QTRS.map(function(q){ return "<th>" + QS[q] + "</th>"; }).join("")
+            el.innerHTML = "<table><thead><tr>" + th("name", "Instructor") + th("cat", "Category") + "<th class='n' title='Courses a year. Change a person’s number for a course release or an overload this year.'>Load</th>" + QTRS.map(function(q){ return "<th>" + QS[q] + "</th>"; }).join("")
                 + "<th class='n'>Courses</th>" + th("fte", "FTE", "n") + th("sch", "SCH", "n") + "<th class='n' title='Students per course; combined sections count as one class'>Avg<br>class</th><th>Balance</th></tr></thead><tbody>"
                 + ps.map(function(p){
                     var un = p.cat === "unassigned";
                     var catCell = un ? "<span class='dim'>STAFF or TBA</span>" : "<select class='cat" + (p.cat === "unset" ? " unset" : "") + "' data-person='" + esc(p.name) + "' aria-label='Category for " + esc(p.name) + "'>"
                         + ["unset", "tt", "teach", "grad", "other"].map(function(c){ return "<option value='" + c + "'" + (c === p.cat ? " selected" : "") + ">" + (c === "unset" ? "Not set" : CATS[c]) + "</option>"; }).join("") + "</select>";
+                    var kind = p.cat === "unset" || p.cat === "other" ? "The default load" : CATS[p.cat] + " load";
+                    var loadTip = p.adj ? kind + " is " + p.base + "; " + p.load + " in " + ayLabel(view.ay) + " (" + (p.adj < 0 ? plural(-p.adj, "course release") : plural(p.adj, "more course", "more courses")) + "). FTE still divides by " + p.base + "."
+                        : kind + ". Lower it for a course release, or raise it for an overload, in " + ayLabel(view.ay) + ". FTE still divides by " + p.base + ".";
                     var loadCell = p.cat === "grad" ? "<span title='Each course counts " + settings.gradShare + " FTE'>" + (settings.gradShare === 0.25 ? "¼" : settings.gradShare) + " each</span>"
-                        : p.cat === "other" ? "<input class='load' type='number' min='1' max='12' step='1' data-load='" + esc(p.name) + "' value='" + p.load + "' aria-label='Annual load for " + esc(p.name) + "'>"
-                        : p.load + (p.cat === "unset" || un ? " <span class='dim'>(default)</span>" : "");
+                        : un ? p.load + " <span class='dim'>(default)</span>"
+                        : "<input class='load" + (p.adj ? " adj" : "") + "' type='number' min='0' max='12' step='0.5' data-load='" + esc(p.name) + "' value='" + p.load + "' title='" + esc(loadTip) + "' aria-label='Load for " + esc(p.name) + " in " + ayLabel(view.ay) + "'>";
                     var cells = QTRS.map(function(q){ return "<td>" + (a.quarters[q] !== "ok" && a.quarters[q] !== "empty" ? "<span class='cc none' title='" + (a.loading ? "Loading" : a.quarters[q] === "error" ? "Couldn’t be read" : "Not published yet") + "'>…</span>" : p.courses[q].length ? p.courses[q].map(function(c){ return chipHtml(p, c.g, c); }).join("") : "<span class='cc none'>–</span>") + "</td>"; }).join("");
                     var n = Math.round(p.count * 100) / 100, pill = p.cat === "grad" || un ? "<span class='pill plain'>" + n + "</span>"
-                        : "<span class='pill " + (n < p.load ? "under" : n > p.load ? "over" : "at") + "' title='" + (n < p.load ? "Under" : n > p.load ? "Over" : "At") + " this person’s annual load'>" + n + " of " + p.load + "</span>";
+                        : "<span class='pill " + (n < p.load ? "under" : n > p.load ? "over" : "at") + "' title='" + (n < p.load ? "Under" : n > p.load ? "Over" : "At") + " this person’s load for " + ayLabel(view.ay) + "'>" + n + " of " + p.load + "</span>";
                     return "<tr" + (un ? " class='unassigned'" : "") + "><td class='name'>" + esc(p.name) + "</td><td>" + catCell + "</td><td class='n'>" + loadCell + "</td>" + cells
                         + "<td class='n'>" + pill + "</td><td class='n'>" + f2(p.fte) + "</td><td class='n'>" + fmt(p.sch) + "</td><td class='n'>" + (p.classes ? Math.round(p.students / p.classes) : "–") + "</td><td>" + (un ? "" : balance(p)) + "</td></tr>";
                 }).join("") + "</tbody></table>";
@@ -418,24 +477,28 @@ javascript:(function(){
             var num = function(id, label, value, attrs){ return "<label>" + label + " <input type='number' id='" + id + "' value='" + value + "' " + (attrs || "") + "></label>"; };
             document.getElementById("settings").innerHTML = "<div class='set-head'>Annual loads (courses a year)</div><div class='set-grid'>"
                 + num("ttLoad", "Tenure track", settings.ttLoad, "min='1' max='12'") + num("teachLoad", "Teaching track", settings.teachLoad, "min='1' max='12'")
-                + num("unsetLoad", "Not set, and unassigned courses", settings.unsetLoad, "min='1' max='12'") + num("gradShare", "Grad instructor: FTE per course", settings.gradShare, "min='0' max='1' step='0.05'")
+                + num("unsetLoad", "Default (Not set, Other, unassigned)", settings.unsetLoad, "min='1' max='12'") + num("gradShare", "Grad instructor: FTE per course", settings.gradShare, "min='0' max='1' step='0.05'")
                 + num("taPerQuarter", "TA: one quarter is 1 ÷", settings.taPerQuarter, "min='1' max='12'")
                 + "<label>Co-taught courses <select id='coteach'><option value='split'" + (settings.coteach === "split" ? " selected" : "") + ">split between instructors</option><option value='full'" + (settings.coteach === "full" ? " selected" : "") + ">count in full for each</option></select></label></div>"
                 + "<div class='set-head'>CAS minimum enrollment (⚠ on a course)</div><div class='set-grid'>" + num("casLower", "100–300 level", settings.casLower, "min='0'") + num("casUpper", "400–500 level", settings.casUpper, "min='0'") + "</div>"
                 + "<div class='set-head'>Instructional (GOF) budget, for cost per SCH</div>" + (prefixes.length ? prefixes.map(function(p){ return "<div class='budget'><span>" + esc(p) + "</span><input type='number' min='0' step='1000' data-budget='" + esc(p) + "' value='" + (budgets[p] || "") + "' placeholder='$'></div>"; }).join("") : "<p class='set-note'>Add a prefix first.</p>")
-                + "<p class='set-note'>Kept in this browser only. Categories are set in the Faculty table.</p><button type='button' class='pill-btn' id='reset'>Reset loads to defaults</button>";
+                + "<p class='set-note'>" + (saved ? "Changes here aren’t kept in the saved file." : "Kept in this browser only.") + " Categories, and each person’s load this year, are set in the Faculty table.</p><button type='button' class='pill-btn' id='reset'>Reset loads to defaults</button>";
         }
         function render(){
             analyzed = {};
             renderChips();
             var a = analyze(view.program === "all" ? prefixes : [view.program]);
+            document.title = "FTECalc " + ayLabel(view.ay) + (saved ? " · saved" + (saved.note ? " · " + saved.note : "") : "");
+            var saveBtn = document.getElementById("save-btn"), busy = prefixes.some(function(p){ var c = cache[view.ay + "|" + p]; return !c || !c.done; });
+            saveBtn.disabled = !prefixes.length || busy;
+            saveBtn.title = !prefixes.length ? "Add a prefix first" : busy ? "Loading…" : "Save these results as a file that opens without the Time Schedule";
             renderSummary(a);
             renderPrograms();
             renderFaculty(a);
             renderTAs(a);
         }
         function loadAll(){
-            if(!prefixes.length){ status(""); render(); return; }
+            if(!prefixes.length || saved){ status(""); render(); return; }
             Promise.all(prefixes.map(function(p){ return loadPrefix(p, view.ay); })).then(function(){
                 var failed = [];
                 prefixes.forEach(function(p){ QTRS.forEach(function(q){ var c = cache[view.ay + "|" + p]; if(c[q] && c[q].status === "error") failed.push(p + " " + QS[q]); }); });
@@ -474,7 +537,19 @@ javascript:(function(){
         document.getElementById("faculty").addEventListener("change", function(e){
             var t = e.target;
             if(t.matches("select.cat")){ var n = t.getAttribute("data-person"); people[n] = Object.assign({}, people[n], { cat: t.value }); store("ftecalc-people", people); render(); }
-            if(t.matches("input.load")){ var m = t.getAttribute("data-load"), v = parseFloat(t.value); if(v > 0){ people[m] = Object.assign({}, people[m], { cat: "other", load: v }); store("ftecalc-people", people); render(); } }
+            if(t.matches("input.load")){
+                /* Kept as the change from the category's load, for this academic year only. */
+                var m = t.getAttribute("data-load"), v = parseFloat(t.value);
+                if(v >= 0){
+                    var rec = Object.assign({}, people[m]), adj = v - baseLoad(catOf(m));
+                    rec.adj = Object.assign({}, rec.adj);
+                    if(adj) rec.adj[view.ay] = adj; else delete rec.adj[view.ay];
+                    if(!Object.keys(rec.adj).length) delete rec.adj;
+                    people[m] = rec;
+                    store("ftecalc-people", people);
+                }
+                render();
+            }
         });
         document.getElementById("faculty").addEventListener("click", function(e){ var th = e.target.closest("th[data-sort]"); if(th){ view.facSort = th.getAttribute("data-sort"); render(); } });
         var settingsBtn = document.getElementById("settings-btn"), box = document.getElementById("settings");
@@ -496,6 +571,136 @@ javascript:(function(){
             if(e.target.closest("[data-open='settings']")) return showSettings(true);
             if(e.target.closest("[data-goto='faculty']")) document.getElementById("panel-faculty").scrollIntoView({ behavior: "smooth", block: "start" });
         });
+        /* Collapsible panels, as in MyGradMod; remembered in this browser. */
+        var collapsed = load("ftecalc-collapsed", {});
+        function setCollapsed(key, on){
+            collapsed[key] = on;
+            document.getElementById("panel-" + key).classList.toggle("collapsed", on);
+            document.querySelector(".panel-toggle[data-panel='" + key + "']").setAttribute("aria-expanded", String(!on));
+            store("ftecalc-collapsed", collapsed);
+        }
+        PANELS.forEach(function(x){ if(collapsed[x[0]]) setCollapsed(x[0], true); });
+        document.querySelectorAll(".panel-toggle").forEach(function(b){ b.addEventListener("click", function(){ var k = b.getAttribute("data-panel"); setCollapsed(k, !collapsed[k]); }); });
+
+        /* ---- Save ----
+           Saves the year's results as one HTML file that reopens this dashboard without the Time Schedule: the sections read
+           (instructor names, TAs only as labels), the settings, the categories and loads of the people in it, and the budgets.
+           Chrome's Save As dialog remembers the folder; other browsers download to Downloads (as in TimeScheduleMod). */
+        function dataAsOf(){
+            var times = prefixes.map(function(p){ var c = cache[view.ay + "|" + p]; return c && c.at; }).filter(Boolean).sort();
+            return times.length ? times[0] : null;
+        }
+        function fileName(note, iso){
+            var d = new Date(iso || Date.now()), pad = function(n){ return String(n).padStart(2, "0"); };
+            var stamp = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + " " + pad(d.getHours()) + pad(d.getMinutes());
+            var ps = prefixes.length > 4 ? prefixes.slice(0, 3).join(" ") + " +" + (prefixes.length - 3) : prefixes.join(" ");
+            return ("FTECalc " + ayLabel(view.ay) + " " + ps + " " + stamp + (note ? " " + note : "")).replace(/[\\/:*?"<>|]+/g, "-").replace(/\s+/g, " ").trim().slice(0, 150) + ".html";
+        }
+        function savedHtml(note){
+            var pages = {}, names = {};
+            prefixes.forEach(function(p){
+                var c = cache[view.ay + "|" + p];
+                pages[p] = {};
+                QTRS.forEach(function(q){ pages[p][q] = c[q]; (c[q] ? c[q].lectures : []).forEach(function(l){ l.who.forEach(function(n){ names[n] = true; }); }); });
+            });
+            var keep = {}, money = {};
+            Object.keys(names).forEach(function(n){ if(people[n]) keep[n] = people[n]; });
+            prefixes.forEach(function(p){ if(budgets[p]) money[p] = budgets[p]; });
+            var data = { version: 1, note: note, savedAt: new Date().toISOString(), dataAsOf: dataAsOf(), ay: view.ay, prefixes: prefixes.slice(), program: view.program,
+                settings: settings, people: keep, budgets: money, pages: pages };
+            var c = { base: cfg.base, startAY: view.ay, lookup: cfg.lookup, saved: data };
+            return "<!DOCTYPE html><html>" + HEAD + "<body><script>(" + app.toString() + ")(" + JSON.stringify(c).replace(/</g, "\\u003c") + ");<\/script></body></html>";
+        }
+        function download(name, html){
+            var url = URL.createObjectURL(new Blob([html], { type: "text/html" })), a = document.createElement("a");
+            a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+            setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
+        }
+        function toast(text){
+            var t = document.createElement("div");
+            t.className = "toast"; t.setAttribute("role", "status"); t.textContent = text;
+            document.body.appendChild(t);
+            setTimeout(function(){ t.remove(); }, 6000);
+        }
+        function openSave(){
+            if(!prefixes.length) return;
+            var old = document.getElementById("save-dialog");
+            if(old) old.remove();
+            var picks = ["10th day", "End of quarter", "End of year", "Budget request"];
+            var dlg = document.createElement("div");
+            dlg.id = "save-dialog"; dlg.className = "shade";
+            dlg.innerHTML = "<div class='dlg' role='dialog' aria-modal='true' aria-labelledby='save-title'><h2><span id='save-title'>Save results</span><button type='button' class='dlg-x' aria-label='Close'>×</button></h2><div class='dlg-body'>"
+                + "<div class='dlg-row'><b>Note</b><div><input id='save-note' maxlength='80' placeholder='e.g. 10th day of Spring' aria-label='Note'><div class='picks'>" + picks.map(function(x){ return "<button type='button'>" + x + "</button>"; }).join("") + "</div></div></div>"
+                + "<div class='dlg-row'><b>Data as of</b><div class='dlg-val'><span id='save-when'></span><label class='dlg-check'><input type='checkbox' id='save-reload' checked>Reload from the Time Schedule first, so the time is exact</label></div></div>"
+                + "<div class='dlg-row'><b>Includes</b><div class='dlg-val'>" + esc(ayLabel(view.ay) + " · " + prefixes.join(", ")) + ": the totals, and each instructor’s courses, category and load. <span class='dim'>Share it only with people who should see instructors’ loads.</span></div></div>"
+                + "<div class='dlg-row'><b>File</b><div class='dlg-file' id='save-file'></div></div><div class='dlg-status' id='save-status' role='status'></div></div>"
+                + "<div class='dlg-foot'><button type='button' class='dlg-cancel'>Cancel</button><button type='button' class='dlg-save'>" + ICON + (window.showSaveFilePicker ? "Save file…" : "Save file") + "</button></div></div>";
+            document.body.appendChild(dlg);
+            var note = dlg.querySelector("#save-note"), reload = dlg.querySelector("#save-reload"), saving = false;
+            var asOf = dataAsOf();
+            dlg.querySelector("#save-when").textContent = asOf ? fmtWhen(asOf) : "–";
+            var refresh = function(){
+                dlg.querySelector("#save-file").textContent = fileName(note.value.trim(), reload.checked ? null : asOf);
+                dlg.querySelectorAll(".picks button").forEach(function(b){ b.classList.toggle("on", b.textContent === note.value); });
+            };
+            var onKey = function(e){ if(e.key === "Escape") close(); };
+            var close = function(){ if(saving) return; dlg.remove(); document.removeEventListener("keydown", onKey); };
+            var setStatus = function(t, err){ var el = dlg.querySelector("#save-status"); el.textContent = t; el.classList.toggle("err", !!err); };
+            document.addEventListener("keydown", onKey);
+            dlg.addEventListener("click", function(e){ if(e.target === dlg || e.target.closest(".dlg-x, .dlg-cancel")) close(); });
+            dlg.querySelectorAll(".picks button").forEach(function(b){ b.addEventListener("click", function(){ note.value = b.textContent; refresh(); }); });
+            note.addEventListener("input", refresh);
+            note.addEventListener("keydown", function(e){
+                /* Tab in an empty note takes the placeholder's suggestion; after that, Tab moves on (as in TimeScheduleMod). */
+                if(e.key === "Tab" && !e.shiftKey && !note.value.trim()){ e.preventDefault(); note.value = note.placeholder.replace(/^e\.g\.\s*/i, ""); refresh(); }
+                else if(e.key === "Enter") dlg.querySelector(".dlg-save").click();
+            });
+            reload.addEventListener("change", refresh);
+            /* Chrome's Save As dialog comes first, while the click still counts as the person's; reloading happens after. */
+            dlg.querySelector(".dlg-save").addEventListener("click", async function(){
+                var text = note.value.trim(), handle = null;
+                if(window.showSaveFilePicker){
+                    try {
+                        handle = await window.showSaveFilePicker({ id: "ftecalc-results", startIn: "documents", suggestedName: fileName(text, reload.checked ? null : asOf),
+                            types: [{ description: "Web page", accept: { "text/html": [".html"] } }] });
+                    } catch(e){
+                        if(e.name === "AbortError") return;
+                        handle = null;
+                    }
+                }
+                saving = true;
+                dlg.querySelectorAll("button, input").forEach(function(x){ x.disabled = true; });
+                try {
+                    if(reload.checked){
+                        setStatus("Reloading from the Time Schedule…");
+                        prefixes.forEach(function(p){ delete cache[view.ay + "|" + p]; });
+                        await Promise.all(prefixes.map(function(p){ return loadPrefix(p, view.ay); }));
+                        status("");
+                        render();
+                        var failed = prefixes.some(function(p){ var c = cache[view.ay + "|" + p]; return QTRS.some(function(q){ return c[q] && c[q].status === "error"; }); });
+                        if(failed) throw new Error("Couldn’t reload from the Time Schedule. Still signed in to UW?");
+                    }
+                    setStatus("Saving…");
+                    var html = savedHtml(text), name = fileName(text, dataAsOf());
+                    if(handle){
+                        var out = await handle.createWritable();
+                        await out.write(new Blob([html], { type: "text/html" }));
+                        await out.close();
+                    } else download(name, html);
+                    saving = false;
+                    close();
+                    toast(handle ? "Saved as “" + handle.name + "”" : "Saved to your Downloads folder: " + name);
+                } catch(e){
+                    saving = false;
+                    if(handle && handle.remove) try { await handle.remove(); } catch(err){}
+                    setStatus(e.message + " Nothing was saved.", true);
+                    dlg.querySelectorAll("button, input").forEach(function(x){ x.disabled = false; });
+                }
+            });
+            refresh();
+            note.focus();
+        }
+        document.getElementById("save-btn").addEventListener("click", openSave);
         renderChips();
         loadAll();
     }

@@ -2,15 +2,17 @@
 
 A browser bookmarklet, built for the UW Philosophy department, that estimates **teaching FTE** and **student credit hours (SCH)** from the [UW Time Schedule](https://www.washington.edu/students/timeschd/). It covers everyone teaching: faculty, lecturers, graduate instructors and TAs.
 
-**Status: built, and tested against made-up Time Schedule pages. Not yet tried on the real Time Schedule.** Saving results is planned (see below).
+**Status: built, and tested against made-up Time Schedule pages. Not yet tried on the real Time Schedule.**
 
 ## Install and run
 
 1. Download [`FTECalc.html`](FTECalc.html). In Chrome, open the Bookmark Manager, click ⋮ and choose **Import bookmarks**, then pick the file. A bookmark named FTECalc appears under "Imported". Drag it to your bookmarks bar.
 2. Sign in and open the Time Schedule for any quarter, for example `…/students/timeschd/AUT2026/`.
-3. Click **FTECalc**. It opens in a new tab on that quarter's academic year. (Allow pop-ups for washington.edu if Chrome asks.)
+3. Click **FTECalc**. It opens in a new tab on that quarter's academic year. From a Winter, Spring or Summer page, the year menu also offers the next academic year, since its Autumn may already be published.
+   - Clicked anywhere else, FTECalc says it's installed and gives the steps, with a button to the Time Schedule. On the Time Schedule's front page, it asks you to pick a quarter. If Chrome blocks the new tab, it says to allow pop-ups.
 4. Type one or more course prefixes, such as `PHIL, CLAS`, and press Enter. Each prefix is a program.
 5. In **Faculty and instructor loads**, set each instructor's category once. FTECalc remembers it.
+6. For a course release or an overload, change that person's **Load** for the year.
 
 The repository is private, so the bookmark carries all of the code. After an update, import the new `FTECalc.html` again.
 
@@ -32,7 +34,7 @@ The page has:
   - how evenly their SCH is spread across their courses
 - **TA allocation:** each course with quiz sections, per quarter. It shows students, quiz sections, estimated TAs and students per TA. Values well above or below the median are highlighted.
 
-The **Program** menu in the header narrows the whole page to one prefix. The **⚙** menu holds the loads, the co-teaching rule, the CAS minimums and the budgets.
+The **Program** menu in the header narrows the whole page to one prefix. The **⚙** menu holds the loads, the co-teaching rule, the CAS minimums and the budgets. Click a panel's title to collapse or expand it; FTECalc remembers which are closed.
 
 **Summer is separate.** Summer quarter is never part of an FTE figure.
 
@@ -45,14 +47,17 @@ The unit is the academic year: Autumn, Winter and Spring.
 | Tenure-track faculty | courses taught in the year ÷ 4 | teaching 1 + 2 + 1 → **1.0** |
 | Teaching-track faculty and teaching professors | courses taught in the year ÷ 6 | teaching 2 + 2 + 1 → **0.83** |
 | Graduate instructors of record | ¼ per course, like a tenure-track course | one course → **0.25** |
-| Other | courses ÷ a load you enter for that person | 3 courses at load 3 → **1.0** |
-| Not set yet | courses ÷ the default load (4) | 2 courses → **0.5** |
+| Other | courses ÷ the default load (4) | 2 courses → **0.5** |
+| Not set yet | courses ÷ the default load | 2 courses → **0.5** |
 | Unassigned courses (STAFF, TBA) | courses ÷ the default load | 2 courses → **0.5** |
 | TAs | ⅙ per TA per quarter (a 50% appointment for a third of the year) | 20 + 16 + 14 TAs → **8.3** |
 
 Every course counts as 1, whatever its credits or size. All the loads can be changed in ⚙.
 
 - **Categories.** The Time Schedule doesn't say who is faculty, a lecturer or a graduate student. You set each instructor's category in the Faculty table, and FTECalc keeps it in your browser. Until then they count at the default load, and the summary says how many still need one.
+- **Course releases and overloads.** Each person's Load can be changed for one academic year: lower for a course release, higher for an overload. The changed number is highlighted, and its hover says what it was changed from. It's kept as a change from the category's load, so it follows if that load changes in ⚙, and it applies only to that year.
+  - The change sets what the person's courses are measured against: a tenure-track member with a release who teaches 3 courses shows "3 of 3".
+  - **FTE doesn't change.** FTE is teaching delivered, so it still divides by the category's load: those 3 courses are 0.75 FTE. A release therefore shows up as less teaching FTE, which is what program comparisons need.
 - **Co-taught courses** (instructors listed as `A/B`) count ½ to each of two instructors, ⅓ to each of three, and so on. Their SCH is split the same way. ⚙ can count the course in full for each instructor instead; the SCH is still split.
 - **The current year.** Until Winter and Spring are published, the year is partial and marked that way. The academic year menu goes back seven years.
 
@@ -112,9 +117,19 @@ Where FTECalc differs:
 - **STAFF and TBA** form one "Unassigned" row instead of appearing as instructors.
 - **No SCH target slider or histogram:** each person is measured against their own load instead.
 
-## Saving results (planned)
+## Saving results
 
-Saved results will include both the totals and the instructor loads, so share them only with people who should see loads.
+**Save** in the header writes the year's results to one HTML file. It opens in any browser without the Time Schedule or a sign-in.
+- **The dialog:**
+  - **A note**, with quick picks: 10th day, End of quarter, End of year, Budget request. Tab in an empty note takes the suggestion shown.
+  - **Reload first** (on by default), so the "data as of" time is exact.
+  - **The file name**, made from the year, the prefixes, the time and the note.
+- **Where it goes:** Chrome's Save As dialog remembers the folder used last time. Other browsers save to Downloads.
+- **What's in it:** each instructor's courses, category and load, plus the settings and budgets for those programs. TAs appear only as counts.
+  - Share the file only with people who should see instructors' loads.
+- **Opening the file:**
+  - A **SAVED** banner shows the note, the year, the prefixes and when the data was read.
+  - The numbers don't update. Categories and loads can still be changed there to try things out, but those changes aren't kept.
 
 ## Decisions
 
@@ -126,12 +141,13 @@ All settled (Sept 29, 2026):
 - **Enrollment:** live.
 - **Budget:** the instructional budget (GOF).
 - **Saved results:** include both the totals and the instructor loads.
+- **Course releases** (Oct 1, 2026): a person's load can be changed for a year. FTE stays courses ÷ the category's load.
 
 ## For maintainers
 
 - `bookmarklet-ftecalc.js` is the whole app. On a Time Schedule page it opens a new tab and writes the dashboard into it. The dashboard fetches each prefix's Autumn, Winter and Spring pages from the Time Schedule.
 - `node make-import.js` rebuilds `FTECalc.html` after a change.
-- `node --experimental-websocket test/run.js` runs the tests: 52 checks in headless Chrome. They use made-up PHIL and CLAS pages in the Time Schedule's format (`test/fake-time-schedule.js`), whose numbers were worked out by hand. Needs Node 20+ and Google Chrome.
+- `node --experimental-websocket test/run.js` runs the tests: 81 checks in headless Chrome. They use made-up PHIL and CLAS pages in the Time Schedule's format (`test/fake-time-schedule.js`), whose numbers were worked out by hand. Needs Node 20+ and Google Chrome.
 
 ## Credit
 

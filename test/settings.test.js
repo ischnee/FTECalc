@@ -1,4 +1,4 @@
-// Settings: loads, co-teaching, the TA divisor, budgets, a custom load, and that all of it survives reopening FTECalc.
+// Settings: loads, co-teaching, the TA divisor, budgets, course releases and overloads, and that all of it survives reopening FTECalc.
 const { launch, READ, sleep } = require('./harness.js');
 const CATS = { 'Prof, Alpha': 'tt', 'Prof, Beta': 'tt', 'Prof, Delta': 'tt', 'Prof, Kappa': 'tt', 'Prof, Gamma': 'teach', 'Lect, Lambda': 'teach', 'Grad, Mu': 'grad' };
 const setInput = (id, value) => `(() => { const i = document.getElementById(${JSON.stringify(id)}); i.value = ${JSON.stringify(String(value))}; i.dispatchEvent(new Event("change", { bubbles: true })); })()`;
@@ -33,11 +33,35 @@ module.exports = async (check, port) => {
     await app.key('Escape', 'Escape', 27);
     check('Escape closes Settings', await app.evaluate('document.getElementById("settings").hidden'));
 
+    /* Course releases and overloads: a person's load for one year. FTE still divides by the category's load. */
+    const setLoad = (name, v) => app.evaluate(`(() => { const i = document.querySelector('input.load[data-load="${name}"]'); i.value = "${v}"; i.dispatchEvent(new Event("change", { bubbles: true })); })()`);
+    const row = async name => (await app.evaluate(READ)).faculty.find(c => c[0] === name);
+    const loadOf = name => app.evaluate(`(() => { const i = document.querySelector('input.load[data-load="${name}"]'); return i ? i.value + (i.classList.contains("adj") ? " adj" : "") + " | " + i.title : null; })()`);
+    await setLoad('Prof, Alpha', 3);
+    let alpha = await row('Prof, Alpha');
+    check('a course release: Alpha 3 of 3, FTE still 0.75', alpha[6] === '3 of 3' && alpha[7] === '0.75', alpha);
+    check('the changed load is marked, and its hover says why', (await loadOf('Prof, Alpha')) === '3 adj | Tenure track load is 4; 3 in 2025–26 (1 course release). FTE still divides by 4.', await loadOf('Prof, Alpha'));
+    await setLoad('Lect, Lambda', 7);
+    const lambda = await row('Lect, Lambda');
+    check('an overload: Lambda 6 of 7, FTE 1.00', lambda[6] === '6 of 7' && lambda[7] === '1.00', lambda);
+    check('summary FTE unchanged by releases and overloads', (await fte()).big === '7.29', await fte());
+    await setLoad('Lect, Lambda', 6);
+    check('back to the category’s load: no longer marked', (await loadOf('Lect, Lambda')).startsWith('6 | Teaching track load.'), await loadOf('Lect, Lambda'));
+    await app.choose('#ay', '2026');
+    await app.waitFor('/1,665/.test(document.getElementById("summary").textContent)');
+    check('a release is for one year: Alpha’s load is 4 in 2026–27', (await loadOf('Prof, Alpha')).startsWith('4 | '), await loadOf('Prof, Alpha'));
+    await app.choose('#ay', '2025');
+    await app.waitFor('/7,395/.test(document.getElementById("summary").textContent)');
+    check('…and still 3 in 2025–26', (await loadOf('Prof, Alpha')).startsWith('3 adj'), await loadOf('Prof, Alpha'));
+    await app.click('#settings-btn');
+    await app.evaluate(setInput('ttLoad', 5));
+    check('a release follows the category’s load: tenure track 5 → Alpha 4', (await loadOf('Prof, Alpha')).startsWith('4 adj'), await loadOf('Prof, Alpha'));
+    await app.click('#reset');
+    await app.key('Escape', 'Escape', 27);
+
     await app.choose('select.cat[data-person="Prof, Kappa"]', 'other');
-    await app.evaluate('(() => { const i = document.querySelector(\'input.load[data-load="Prof, Kappa"]\'); i.value = "3"; i.dispatchEvent(new Event("change", { bubbles: true })); })()');
-    r = await app.evaluate(READ);
-    const kappa = r.faculty.find(c => c[0] === 'Prof, Kappa');
-    check('Other with its own load of 3: 3 of 3, FTE 1.00', kappa && kappa[6] === '3 of 3' && kappa[7] === '1.00', kappa);
+    const kappa = await row('Prof, Kappa');
+    check('Other: the default load, 3 of 4, FTE 0.75', kappa && kappa[6] === '3 of 4' && kappa[7] === '0.75', kappa);
     await app.choose('select.cat[data-person="Prof, Kappa"]', 'tt');
 
     await app.close();
@@ -46,6 +70,7 @@ module.exports = async (check, port) => {
     await sleep(300);
     r = await app.evaluate(READ);
     check('reopened: prefixes, categories and budgets kept', r.summary[1].big === '7.29' && r.summary[3].big === '$203' && (await app.evaluate('document.querySelectorAll("#chips .chip").length')) === 2, [r.summary[1].big, r.summary[3].big]);
+    check('reopened: Alpha’s release kept', (await app.evaluate('document.querySelector(\'input.load[data-load="Prof, Alpha"]\').value')) === '3');
     check('no script errors', app.errors.length === 0, app.errors);
   } finally { tab.kill(); }
 };
