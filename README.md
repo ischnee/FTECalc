@@ -20,7 +20,7 @@ javascript:(function(){
   var s = document.createElement('script');
   s.src = 'https://cdn.jsdelivr.net/gh/ischnee/FTECalc@main/bookmarklet-ftecalc.js?t=' + Date.now();
   s.onload = function() { console.log('[Bookmarklet] Script loaded'); };
-  s.onerror = function() { console.error('[Bookmarklet] Failed to load script'); };
+  s.onerror = function() { alert("FTECalc couldn't load on this page. Open the UW Time Schedule, pick a quarter, then click it again."); };
   document.body.appendChild(s);
 })();
 ```
