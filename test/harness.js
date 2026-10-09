@@ -18,6 +18,10 @@ function startServer() {
   const server = http.createServer((req, res) => {
     if (req.url === '/__signout') { signedOut = !signedOut; res.writeHead(200); return res.end(String(signedOut)); }
     if (req.url === '/__requests') { res.writeHead(200); return res.end(String(requests)); }
+    // The loader's two outside calls, faked: GitHub's latest commit on main, and jsDelivr's copy at a commit (or at main).
+    if (req.url === '/sha') { res.writeHead(200, { 'content-type': 'text/plain', 'access-control-allow-origin': '*' }); return res.end('0123456789abcdef0123456789abcdef01234567'); }
+    if (req.url === '/nosha') { res.writeHead(403, { 'access-control-allow-origin': '*' }); return res.end('rate limited'); }
+    if (/^\/cdn\/([0-9a-f]{40}|main)\/bookmarklet-ftecalc\.js/.test(req.url)) { res.writeHead(200, { 'content-type': 'application/javascript; charset=utf-8' }); return res.end(fs.readFileSync(path.join(DIR, '..', 'bookmarklet-ftecalc.js'))); }
     if (req.url.startsWith('/cdn/bookmarklet-ftecalc.js')) { res.writeHead(200, { 'content-type': 'application/javascript; charset=utf-8' }); return res.end(fs.readFileSync(path.join(DIR, '..', 'bookmarklet-ftecalc.js'))); }
     if (req.url === '/students/timeschd/') { res.writeHead(200, { 'content-type': 'text/html' }); return res.end('<html><body><h1>Time Schedule</h1><a href="AUT2026/">Autumn 2026</a></body></html>'); }
     if (req.url === '/elsewhere') { res.writeHead(200, { 'content-type': 'text/html' }); return res.end('<html><body><h1>Not the Time Schedule</h1></body></html>'); }
@@ -69,7 +73,9 @@ async function connect(url, isBrowser) {
 async function launch(name, port) {
   const profile = path.join(TMP, 'profile-' + name), downloads = path.join(TMP, 'downloads-' + name);
   fs.rmSync(profile, { recursive: true, force: true }); fs.rmSync(downloads, { recursive: true, force: true }); fs.mkdirSync(downloads, { recursive: true });
-  const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', `--user-data-dir=${profile}`, `--remote-debugging-port=${port}`, '--window-size=1440,900', 'about:blank'], { stdio: 'ignore' });
+  /* No outside hosts: only this machine's test server (and, for LIVE runs, GitHub's API and jsDelivr). */
+  const hosts = 'MAP * ~NOTFOUND, EXCLUDE 127.0.0.1, EXCLUDE localhost' + (process.env.LIVE ? ', EXCLUDE api.github.com, EXCLUDE cdn.jsdelivr.net' : '');
+  const chrome = spawn(CHROME, ['--headless=new', '--disable-gpu', `--user-data-dir=${profile}`, `--host-resolver-rules=${hosts}`, `--remote-debugging-port=${port}`, '--window-size=1440,900', 'about:blank'], { stdio: 'ignore' });
   const json = async p => (await fetch(`http://127.0.0.1:${port}${p}`)).json();
   for (let i = 0; i < 60; i++) { try { await json('/json/version'); break; } catch { await sleep(200); } }
   const browser = await connect((await json('/json/version')).webSocketDebuggerUrl, true);
@@ -88,8 +94,11 @@ async function launch(name, port) {
   };
   tab.go = async url => { await tab.send('Page.navigate', { url }); await tab.waitFor(`document.readyState === "complete" && location.href === ${JSON.stringify(url)}`); };
   tab.runBookmarklet = () => tab.evaluate(BOOKMARKLET, true);
-  /* The README's loader, with its address pointed at this server (or at jsDelivr itself, given cdn). */
-  tab.runLoader = cdn => tab.evaluate(`(function(){ var s = document.createElement('script'); s.src = ${JSON.stringify(cdn || BASE + '/cdn/bookmarklet-ftecalc.js')} + '?t=' + Date.now(); document.body.appendChild(s); })()`, true);
+  /* The README's loader, its GitHub and jsDelivr addresses pointed at this server (sha: '/sha', or '/nosha' for a GitHub
+     that doesn't answer), or as written (live: the real GitHub and jsDelivr). */
+  const LOADER = fs.readFileSync(path.join(DIR, '..', 'README.md'), 'utf8').match(/```\njavascript:(\(function\(\)\{[\s\S]*?\}\)\(\);)\n```/)[1];
+  tab.runLoader = (how = '/sha') => tab.evaluate(how === 'live' ? LOADER : LOADER.replace('https://api.github.com/repos/ischnee/FTECalc/commits/main', BASE + how).replace('https://cdn.jsdelivr.net/gh/ischnee/FTECalc@', BASE + '/cdn/'), true);
+  tab.scriptSrc = () => tab.evaluate('[...document.scripts].map(s => s.src).filter(Boolean).pop()');
   tab.openApp = async (quarter = 'AUT2026', how) => {
     await tab.go(`${BASE}/students/timeschd/${quarter}/`);
     const before = new Set((await json('/json/list')).map(t => t.id));
