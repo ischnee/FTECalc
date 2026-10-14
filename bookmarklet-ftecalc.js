@@ -176,7 +176,7 @@ javascript:(function(){
                     return;
                 }
                 if(!course) return;
-                var s = line.match(/^(?:[A-Za-z]+\s*)*>?\s*(\d{4,5})\s+([A-Z][A-Z0-9]{0,2})\s+(\S+)(.*)$/), el = line.match(/(\d+)\s*\/\s*(\d+)/);
+                var s = line.match(/^(?:[A-Za-z]+(?![A-Za-z])\s*)*>?\s*(\d{4,5})\s+([A-Z][A-Z0-9]{0,2})\s+(\S+)(.*)$/), el = line.match(/(\d+)\s*\/\s*(\d+)/);
                 if(!s || !el) return;
                 var rest = s[4], cut = rest.indexOf(el[0]), info = meetingAndPeople(cut >= 0 ? rest.slice(0, cut) : rest);
                 var sec = { prefix: prefix, number: course.number, level: course.level, title: course.title, sec: s[2], sln: s[1], enrl: +el[1], lim: +el[2], meet: info.meet, who: info.who, staff: info.staff };

@@ -91,8 +91,9 @@ function page(quarter, file) {
     + `<table><tr><td><pre>Restr  SLN   ID   Cred       Meeting Times      Bldg/Rm        Instructor           Status  Enrl/Lim</pre></td></tr></table>`;
   courses.forEach(([num, name, gened, secs]) => {
     out += `<br><table><tr><td><A NAME=${prefix.toLowerCase()}${num}>${prefix}&nbsp;&nbsp; ${num} </A>&nbsp;<A HREF=/course>${name}</A> ${gened}</td></tr></table>`;
+    // Sections with quiz sections carry a long plain-text note, as on the real Time Schedule (Ben's old section-row pattern froze on these).
     secs.forEach(([sec, cred, meets, who, enrl, lim, quizzes, flag]) => {
-      out += `<table><tr><td><pre>${flag ? flag + (flag === '>' ? '' : '  ') : ''}<A HREF=/sln>${sln++}</A> ${sec}  ${cred.padEnd(8)}${meets.padEnd(31)}${who.padEnd(24)}Open     ${String(enrl).padStart(3)}/ ${lim}      ${gened.replace(/[()]/g, '')}</pre></td></tr></table>`;
+      out += `<table><tr><td><pre>${flag ? flag + (flag === '>' ? '' : '  ') : ''}<A HREF=/sln>${sln++}</A> ${sec}  ${cred.padEnd(8)}${meets.padEnd(31)}${who.padEnd(24)}Open     ${String(enrl).padStart(3)}/ ${lim}      ${gened.replace(/[()]/g, '')}${(quizzes || []).length ? '\n                        STUDENTS MUST ALSO REGISTER FOR A QUIZ SECTION OF THIS COURSE AND ATTEND ALL MEETINGS IN PERSON' : ''}</pre></td></tr></table>`;
       (quizzes || []).forEach(([leader, qe], q) => {
         const id = sec + String.fromCharCode(65 + q);
         const qmeets = leader === 'TBA' ? 'to be arranged' : 'TTh    0930-1020  SAV  132';
