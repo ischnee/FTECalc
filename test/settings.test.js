@@ -1,4 +1,5 @@
-// Settings: loads, co-teaching, the TA divisor, budgets, course releases and overloads, and that all of it survives reopening FTECalc.
+// Settings and FTEs: co-teaching, the TA divisor, budgets, each person's FTE (fractions, carried forward to later years),
+// and that all of it survives reopening FTECalc.
 const { launch, READ, sleep } = require('./harness.js');
 const CATS = { 'Prof, Alpha': 'tt', 'Prof, Beta': 'tt', 'Prof, Delta': 'tt', 'Prof, Kappa': 'tt', 'Prof, Gamma': 'teach', 'Lect, Lambda': 'teach', 'Grad, Mu': 'grad' };
 const setInput = (id, value) => `(() => { const i = document.getElementById(${JSON.stringify(id)}); i.value = ${JSON.stringify(String(value))}; i.dispatchEvent(new Event("change", { bubbles: true })); })()`;
@@ -15,17 +16,17 @@ module.exports = async (check, port) => {
 
     await app.click('#settings-btn');
     check('gear opens Settings', await app.evaluate('!document.getElementById("settings").hidden'));
+    check('no loads in Settings any more', await app.evaluate('!document.getElementById("ttLoad") && !document.getElementById("gradShare") && !!document.getElementById("taPerQuarter")'));
     await app.choose('#coteach', 'full');
     let r = await app.evaluate(READ);
-    check('co-taught in full: FTE 7.50, Beta 4 of 4, Gamma 6 of 6', r.summary[1].big === '7.50' && r.faculty.some(c => c[0] === 'Prof, Beta' && c[6] === '4 of 4') && r.faculty.some(c => c[0] === 'Prof, Gamma' && c[6] === '6 of 6'), [r.summary[1].big, r.faculty.map(c => c[6])]);
-    check('co-taught in full: SCH still split', r.faculty.some(c => c[0] === 'Prof, Beta' && c[8] === '775'));
+    check('co-taught in full: Beta 4 courses, Gamma 6, FTE unchanged at 9.00', r.summary[1].big === '9.00' && r.faculty.some(c => c[0] === 'Prof, Beta' && c[6] === '4') && r.faculty.some(c => c[0] === 'Prof, Gamma' && c[6] === '6'), [r.summary[1].big, r.faculty.map(c => c[6])]);
+    check('co-taught in full: SCH still split', r.faculty.some(c => c[0] === 'Prof, Beta' && c[7] === '775'));
+    check('co-taught in full: CLAS has 1 of Gamma’s 6 courses, 2.17 FTE', r.programs[1][2] === '2.17', r.programs[1]);
     await app.choose('#coteach', 'split');
-    await app.evaluate(setInput('ttLoad', 5));
-    check('tenure-track load 5: 11.5 courses ÷ 5 = 2.30', /^Tenure track 2\.30 ·/.test((await fte()).parts), (await fte()).parts);
     await app.evaluate(setInput('taPerQuarter', 3));
     check('a TA quarter as ⅓: TAs 4.00', / TAs 4\.00$/.test((await fte()).parts), (await fte()).parts);
     await app.click('#reset');
-    check('reset restores the defaults', (await fte()).big === '7.29', await fte());
+    check('reset restores the defaults', (await fte()).big === '9.00', await fte());
     await app.evaluate('(() => { for (const [p, v] of [["PHIL", 1000000], ["CLAS", 500000]]) { const i = document.querySelector(`[data-budget="${p}"]`); i.value = v; i.dispatchEvent(new Event("change", { bubbles: true })); } })()');
     r = await app.evaluate(READ);
     check('cost per SCH: $1.5M ÷ 7,395 = $203', r.summary[3].big === '$203' && /\$1,500,000/.test(r.summary[3].parts), r.summary[3]);
@@ -33,35 +34,40 @@ module.exports = async (check, port) => {
     await app.key('Escape', 'Escape', 27);
     check('Escape closes Settings', await app.evaluate('document.getElementById("settings").hidden'));
 
-    /* Course releases and overloads: a person's load for one year. FTE still divides by the category's load. */
-    const setLoad = (name, v) => app.evaluate(`(() => { const i = document.querySelector('input.load[data-load="${name}"]'); i.value = "${v}"; i.dispatchEvent(new Event("change", { bubbles: true })); })()`);
-    const row = async name => (await app.evaluate(READ)).faculty.find(c => c[0] === name);
-    const loadOf = name => app.evaluate(`(() => { const i = document.querySelector('input.load[data-load="${name}"]'); return i ? i.value + (i.classList.contains("adj") ? " adj" : "") + " | " + i.title : null; })()`);
-    await setLoad('Prof, Alpha', 3);
-    let alpha = await row('Prof, Alpha');
-    check('a course release: Alpha 3 of 3, FTE still 0.75', alpha[6] === '3 of 3' && alpha[7] === '0.75', alpha);
-    check('the changed load is marked, and its hover says why', (await loadOf('Prof, Alpha')) === '3 adj | Tenure track load is 4; 3 in 2025–26 (1 course release). FTE still divides by 4.', await loadOf('Prof, Alpha'));
-    await setLoad('Lect, Lambda', 7);
-    const lambda = await row('Lect, Lambda');
-    check('an overload: Lambda 6 of 7, FTE 1.00', lambda[6] === '6 of 7' && lambda[7] === '1.00', lambda);
-    check('summary FTE unchanged by releases and overloads', (await fte()).big === '7.29', await fte());
-    await setLoad('Lect, Lambda', 6);
-    check('back to the category’s load: no longer marked', (await loadOf('Lect, Lambda')).startsWith('6 | Teaching track load.'), await loadOf('Lect, Lambda'));
+    /* A person's FTE: typed as a decimal or a fraction, kept to two decimals, and carried forward to later years. */
+    const setFte = (name, v) => app.evaluate(`(() => { const i = document.querySelector('input.fte[data-fte="${name}"]'); i.value = "${v}"; i.dispatchEvent(new Event("change", { bubbles: true })); })()`);
+    const fteOf = name => app.evaluate(`(() => { const i = document.querySelector('input.fte[data-fte="${name}"]'); return i ? i.value + (i.classList.contains("set") ? " set" : "") + " | " + i.title : null; })()`);
+    await setFte('Prof, Alpha', '1/2');
+    check('“1/2” is 0.50, marked as changed, and its hover says since when', (await fteOf('Prof, Alpha')) === '0.50 set | 0.50 since 2025–26. A change applies from 2025–26 on.', await fteOf('Prof, Alpha'));
+    check('…and the FTE total drops by half: 8.50', (await fte()).big === '8.50' && /^Tenure track 3\.50 ·/.test((await fte()).parts), await fte());
+    check('…and PHIL’s FTE: 4.50', (await app.evaluate(READ)).programs[0][2] === '4.50');
+    await setFte('Lect, Lambda', '¾');
+    check('“¾” is 0.75', (await fteOf('Lect, Lambda')).startsWith('0.75 set'), await fteOf('Lect, Lambda'));
+    await setFte('Lect, Lambda', '2/3');
+    check('“2/3” is 0.67', (await fteOf('Lect, Lambda')).startsWith('0.67 set'), await fteOf('Lect, Lambda'));
+    await setFte('Lect, Lambda', 'half');
+    check('something that isn’t a number is ignored', (await fteOf('Lect, Lambda')).startsWith('0.67 set'), await fteOf('Lect, Lambda'));
+    await setFte('Lect, Lambda', '1.5');
+    check('…as is more than 1', (await fteOf('Lect, Lambda')).startsWith('0.67 set'), await fteOf('Lect, Lambda'));
+    await setFte('Lect, Lambda', '1');
+    check('back to 1: no longer marked', (await fteOf('Lect, Lambda')) === '1.00 | 1 FTE, as everyone is unless changed. A change applies from 2025–26 on.', await fteOf('Lect, Lambda'));
+    await setFte('Unassigned (STAFF, TBA)', '0.33');
+    check('courses with no instructor can be given FTE too: 8.83', (await fte()).big === '8.83', await fte());
+    await setFte('Unassigned (STAFF, TBA)', '0');
+
     await app.choose('#ay', '2026');
     await app.waitFor('/1,665/.test(document.getElementById("summary").textContent)');
-    check('a release is for one year: Alpha’s load is 4 in 2026–27', (await loadOf('Prof, Alpha')).startsWith('4 | '), await loadOf('Prof, Alpha'));
+    check('carried forward: Alpha is 0.50 in 2026–27 too', (await fteOf('Prof, Alpha')) === '0.50 set | 0.50 since 2025–26. A change applies from 2026–27 on.', await fteOf('Prof, Alpha'));
+    await setFte('Prof, Alpha', '1');
+    check('back to 1 from 2026–27', (await fteOf('Prof, Alpha')).startsWith('1.00 set | 1.00 since 2026–27.'), await fteOf('Prof, Alpha'));
     await app.choose('#ay', '2025');
     await app.waitFor('/7,395/.test(document.getElementById("summary").textContent)');
-    check('…and still 3 in 2025–26', (await loadOf('Prof, Alpha')).startsWith('3 adj'), await loadOf('Prof, Alpha'));
-    await app.click('#settings-btn');
-    await app.evaluate(setInput('ttLoad', 5));
-    check('a release follows the category’s load: tenure track 5 → Alpha 4', (await loadOf('Prof, Alpha')).startsWith('4 adj'), await loadOf('Prof, Alpha'));
-    await app.click('#reset');
-    await app.key('Escape', 'Escape', 27);
+    check('…and still 0.50 in 2025–26', (await fteOf('Prof, Alpha')).startsWith('0.50 set'), await fteOf('Prof, Alpha'));
+    const stored = await app.evaluate('JSON.parse(localStorage.getItem("ftecalc-people"))["Prof, Alpha"]');
+    check('only the changes are kept', JSON.stringify(stored) === '{"cat":"tt","fte":{"2025":0.5,"2026":1}}', stored);
 
     await app.choose('select.cat[data-person="Prof, Kappa"]', 'other');
-    const kappa = await row('Prof, Kappa');
-    check('Other: the default load, 3 of 4, FTE 0.75', kappa && kappa[6] === '3 of 4' && kappa[7] === '0.75', kappa);
+    check('Other: still 1 FTE', (await app.evaluate(READ)).summary[1].parts.includes('Other 1.00'), (await fte()).parts);
     await app.choose('select.cat[data-person="Prof, Kappa"]', 'tt');
 
     await app.close();
@@ -69,8 +75,8 @@ module.exports = async (check, port) => {
     await app.waitFor('/7,395/.test(document.getElementById("summary").textContent)');
     await sleep(300);
     r = await app.evaluate(READ);
-    check('reopened: prefixes, categories and budgets kept', r.summary[1].big === '7.29' && r.summary[3].big === '$203' && (await app.evaluate('document.querySelectorAll("#chips .chip").length')) === 2, [r.summary[1].big, r.summary[3].big]);
-    check('reopened: Alpha’s release kept', (await app.evaluate('document.querySelector(\'input.load[data-load="Prof, Alpha"]\').value')) === '3');
+    check('reopened: prefixes, categories, FTEs and budgets kept', r.summary[1].big === '8.50' && r.summary[3].big === '$203' && (await app.evaluate('document.querySelectorAll("#chips .chip").length')) === 2, [r.summary[1].big, r.summary[3].big]);
+    check('reopened: Alpha’s FTE kept', (await app.evaluate('document.querySelector(\'input.fte[data-fte="Prof, Alpha"]\').value')) === '0.50');
     check('no script errors', app.errors.length === 0, app.errors);
   } finally { tab.kill(); }
 };

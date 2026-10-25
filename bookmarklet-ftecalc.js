@@ -3,7 +3,7 @@ javascript:(function(){
        Run it on any Time Schedule quarter page (e.g. /students/timeschd/AUT2026/). It reads the Autumn, Winter and Spring
        pages of the course prefixes you choose (Summer is never counted) and opens a dashboard: a summary, programs
        compared, each instructor's load, and TA allocation. It reads only the Time Schedule's section listings, so no
-       student data; TA names become TA1, TA2... as pages load. Categories, loads and budgets you set stay in this browser.
+       student data; TA names become TA1, TA2... as pages load. Categories, FTEs and budgets you set stay in this browser.
        The prefix list and the way section lines are read follow Ben Marwick's Time Schedule tools (MIT license; see
        LICENSE), as do several ideas: splitting co-taught sections, the CAS minimum-enrollment warning, how evenly an
        instructor's SCH is spread, and how concentrated a program's SCH is. Design notes are in the README. */
@@ -72,9 +72,8 @@ javascript:(function(){
         + 'td{border-bottom:1px solid #eee;padding:6px 8px;vertical-align:middle}td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}td.name{font-weight:600;white-space:nowrap}tr.total td{border-top:2px solid #ddd;border-bottom:none;font-weight:700}'
         + '.bar-cat{display:flex;height:12px;width:170px;border-radius:3px;overflow:hidden;background:#eee}.bar-cat i{display:block}.key{display:inline-flex;flex-wrap:wrap;gap:4px 10px;font-size:12px;color:#666;font-weight:normal}.key span::before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px;background:var(--c)}'
         + '.cc{display:inline-block;border:1px solid #cfc5e6;border-radius:10px;padding:0 7px;margin:1px 3px 1px 0;font-size:12px;color:#2e1a5c;background:#fff;white-space:nowrap;cursor:help}.cc.none{border-style:dashed;color:#bbb;cursor:default}.cc sup{font-size:9px;margin-left:1px}'
-        + '.pill{display:inline-block;border-radius:10px;padding:1px 8px;font-size:12px;font-weight:600;white-space:nowrap}.under{background:#e0ecff;color:#1d4ed8}.at{background:#e7f6ec;color:#15803d}.over{background:#fef3c7;color:#92400e}.plain{color:#444;font-weight:normal}'
         + '.flag-hi{background:#fef3c7;color:#92400e;border-radius:4px;padding:1px 6px;font-weight:600}.flag-lo{background:#e0ecff;color:#1d4ed8;border-radius:4px;padding:1px 6px;font-weight:600}'
-        + 'select.cat{font:inherit;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:1px 3px;background:#fff}select.cat.unset{color:#9a6a87;border-color:#e2b6c8;background:#fbf3f7}input.load{width:46px;font:inherit;font-size:12px;padding:1px 4px;border:1px solid #ddd;border-radius:4px;text-align:right}input.load.adj{background:#efe9f9;border-color:#9d86d6;color:#2e1a5c;font-weight:700}'
+        + 'select.cat{font:inherit;font-size:12px;border:1px solid #ddd;border-radius:4px;padding:1px 3px;background:#fff}select.cat.unset{color:#9a6a87;border-color:#e2b6c8;background:#fbf3f7}input.fte{width:44px;font:inherit;font-size:12px;padding:1px 4px;border:1px solid #ddd;border-radius:4px;text-align:right}input.fte.set{background:#efe9f9;border-color:#9d86d6;color:#2e1a5c;font-weight:700}.share{font-size:12px;margin-left:5px;cursor:help}'
         + 'tr.unassigned td{color:#666;font-style:italic}.dim{color:#888;font-weight:normal}'
         + 'footer{margin:0 25px 25px;font-size:12px;color:#666;line-height:1.5}'
         + '.panel-toggle{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;display:inline-flex;align-items:center}.panel-toggle .chev{display:inline-block;width:20px;font-size:13px;transition:transform .15s}'
@@ -109,15 +108,17 @@ javascript:(function(){
         var CATS = { tt: "Tenure track", teach: "Teaching track", grad: "Grad instructor", other: "Other", unset: "Not set", unassigned: "Unassigned (STAFF, TBA)" };
         var CAT_ORDER = ["tt", "teach", "grad", "other", "unset", "unassigned"];
         var CAT_COLOR = { tt: "#4b2e83", teach: "#9d86d6", grad: "#d9b44a", other: "#6f9fc9", unset: "#e2b6c8", unassigned: "#c9c9cf" };
-        var DEFAULTS = { ttLoad: 4, teachLoad: 6, unsetLoad: 4, gradShare: 0.25, taPerQuarter: 6, coteach: "split", casLower: 10, casUpper: 5 };
+        var DEFAULTS = { taPerQuarter: 6, coteach: "split", casLower: 10, casUpper: 5 };
+        var UNASSIGNED = "Unassigned (STAFF, TBA)";
 
         /* A saved file (see Save below) opens with its own data and choices, and never reads or writes this browser's storage. */
         var saved = cfg.saved || null;
-        /* What's kept in this browser: settings, each instructor's category (and any change to their load, by academic year),
-           budgets, the prefixes, and which panels are collapsed. */
+        /* What's kept in this browser: settings, each instructor's category and FTE (by academic year), budgets, the prefixes,
+           and which panels are collapsed. */
         function load(key, fallback){ if(saved) return fallback; try { var v = JSON.parse(localStorage.getItem(key)); return v === null || v === undefined ? fallback : v; } catch(e){ return fallback; } }
         function store(key, v){ if(saved) return; try { localStorage.setItem(key, JSON.stringify(v)); } catch(e){} }
-        var settings = Object.assign({}, DEFAULTS, load("ftecalc-settings", {}));
+        function withDefaults(s){ var out = Object.assign({}, DEFAULTS); Object.keys(DEFAULTS).forEach(function(k){ if(s && s[k] !== undefined) out[k] = s[k]; }); return out; }
+        var settings = withDefaults(load("ftecalc-settings", {}));
         var people = load("ftecalc-people", {});
         var budgets = load("ftecalc-budgets", {});
         var prefixes = load("ftecalc-prefixes", []).filter(function(p){ return cfg.lookup[p]; });
@@ -125,7 +126,7 @@ javascript:(function(){
         var cache = {};
         var HEAD = document.head.outerHTML;   /* this page's head (title and styles), for saved files */
         if(saved){
-            settings = Object.assign({}, DEFAULTS, saved.settings);
+            settings = withDefaults(saved.settings);
             people = saved.people || {};
             budgets = saved.budgets || {};
             prefixes = saved.prefixes.slice();
@@ -133,6 +134,8 @@ javascript:(function(){
             view.program = saved.program || "all";
             prefixes.forEach(function(p){ var e = cache[saved.ay + "|" + p] = Object.assign({ done: true, at: saved.dataAsOf }, saved.pages[p]); e.ready = Promise.resolve(); });
         }
+        /* Loads (and course releases) from earlier versions are no longer used. */
+        Object.keys(people).forEach(function(n){ delete people[n].adj; });
 
         function esc(s){ return String(s === null || s === undefined ? "" : s).replace(/[&<>"']/g, function(c){ return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
         function ayLabel(ay){ return ay + "–" + String(ay + 1).slice(2); }
@@ -202,13 +205,13 @@ javascript:(function(){
                 delete z.who; delete z.staff; delete z.meet;
             });
         }
-        function loadPrefix(prefix, ay){
+        function loadPrefix(prefix, ay, quiet){
             var key = ay + "|" + prefix;
             if(cache[key]) return cache[key].ready;
             var entry = cache[key] = {};
             entry.ready = Promise.all(QTRS.map(function(q){
                 var url = cfg.base + q + quarterYear(q, ay) + "/" + cfg.lookup[prefix];
-                status("Loading " + prefix + " " + QNAME[q] + " " + quarterYear(q, ay) + "…");
+                if(!quiet) status("Loading " + prefix + " " + QNAME[q] + " " + quarterYear(q, ay) + "…");
                 return fetch(url).then(function(r){
                     if(!r.ok) return { status: "missing", lectures: [], quizzes: [], varSkipped: 0 };
                     return r.text().then(function(t){ var pg = parsePage(t, prefix); labelQuizzes(pg); pg.status = pg.lectures.length ? "ok" : "empty"; return pg; });
@@ -218,13 +221,45 @@ javascript:(function(){
         }
 
         /* ---- Counting ---- */
-        function catOf(name){ var p = people[name]; return p && CATS[p.cat] && p.cat !== "unassigned" ? p.cat : "unset"; }
-        /* A category's annual load. A grad instructor's course counts gradShare, i.e. a load of 1 / gradShare. */
-        function baseLoad(cat){ return cat === "tt" ? settings.ttLoad : cat === "teach" ? settings.teachLoad : cat === "grad" ? 1 / settings.gradShare : settings.unsetLoad; }
-        /* A person's change to their load in the year shown: -1 for a course release, +1 for an overload. It changes what
-           their courses are measured against ("3 of 3"), not their FTE, which is teaching delivered: courses ÷ the category's
-           load. So a release shows as less teaching FTE, as it should when comparing programs. */
-        function adjOf(name){ var a = people[name] && people[name].adj; return (a && +a[view.ay]) || 0; }
+        /* A person is kept under their name as the Time Schedule spells it. Over the years a middle initial comes and goes, so a
+           name with no record of its own uses the record of the same last and first name ("Smith, John" for "Smith, John A"). */
+        function nameKey(n){ var p = n.split(","); return (p[0] + "|" + (p[1] || "").trim().split(/\s+/)[0]).toLowerCase().normalize("NFD").replace(/[^a-z|]/g, ""); }
+        var keyIndex = null;
+        function rec(name){
+            if(people[name]) return people[name];
+            if(!keyIndex){ keyIndex = {}; Object.keys(people).forEach(function(n){ var k = nameKey(n); if(!keyIndex[k]) keyIndex[k] = n; }); }
+            return name === UNASSIGNED ? undefined : people[keyIndex[nameKey(name)]];
+        }
+        /* A change is kept under the name itself, starting from what it had (so a second John Smith doesn't change the first). */
+        function setRec(name, change){
+            var r = Object.assign({}, rec(name), change);
+            Object.keys(r).forEach(function(k){ if(r[k] === undefined) delete r[k]; });
+            /* An empty record stays when another spelling's record would otherwise take its place. */
+            if(Object.keys(r).length || rec(name) !== people[name]) people[name] = r; else delete people[name];
+            keyIndex = null;
+            store("ftecalc-people", people);
+        }
+        function catOf(name){ var p = rec(name); return p && CATS[p.cat] && p.cat !== "unassigned" ? p.cat : "unset"; }
+        /* A person's FTE in an academic year: 1 unless it's been changed (0 for courses with no instructor named). A change
+           applies from its year on, until a later one. Their courses are noted but don't change it. */
+        function fteAt(name, ay){
+            var f = (rec(name) || {}).fte, at = { v: name === UNASSIGNED ? 0 : 1, since: null };
+            if(f) Object.keys(f).map(Number).sort(function(a, b){ return a - b; }).forEach(function(y){ if(y <= ay) at = { v: +f[y], since: y }; });
+            return at;
+        }
+        function setFte(name, ay, v){
+            var f = Object.assign({}, (rec(name) || {}).fte), prev = name === UNASSIGNED ? 0 : 1;
+            f[ay] = v;
+            /* Only the changes are kept: a year that repeats the one before it goes. */
+            Object.keys(f).map(Number).sort(function(a, b){ return a - b; }).forEach(function(y){ if(+f[y] === prev) delete f[y]; else prev = +f[y]; });
+            setRec(name, { fte: Object.keys(f).length ? f : undefined });
+        }
+        /* "0.5", ".5", "1/2", "½" or "50%" → 0.5, to two decimals; null for anything that isn't an FTE from 0 to 1. */
+        function parseFte(s){
+            s = String(s).trim().replace(/[½⅓⅔¼¾⅕⅙]/g, function(c){ return { "½": "1/2", "⅓": "1/3", "⅔": "2/3", "¼": "1/4", "¾": "3/4", "⅕": "1/5", "⅙": "1/6" }[c]; });
+            var m = s.match(/^(\d*\.?\d+)\s*(?:\/\s*(\d*\.?\d+)|(%))?$/), v = m ? (m[2] ? +m[1] / +m[2] : m[3] ? +m[1] / 100 : +m[1]) : NaN;
+            return isFinite(v) && v >= 0 && v <= 1 ? Math.round(v * 100) / 100 : null;
+        }
         function mostCommon(values, prefer){
             var n = {};
             values.forEach(function(v){ n[v] = (n[v] || 0) + 1; });
@@ -234,12 +269,12 @@ javascript:(function(){
            with the same instructors, days, time and room (combined 4xx/5xx sections, joint listings) count once. A co-taught
            course's SCH is split evenly among its instructors (after Ben Marwick); the course itself is split too, unless
            Settings counts it in full for each. */
-        function analyze(set){
-            var a = { quarters: {}, lectures: [], quizzes: [], varSkipped: 0, persons: [], sch: 0, schByQ: {}, loading: false };
+        function analyze(set, ay, bare){
+            var a = { ay: ay, quarters: {}, lectures: [], quizzes: [], varSkipped: 0, persons: [], sch: 0, schByQ: {}, loading: false };
             var rank = ["missing", "error", "empty", "ok"];
             QTRS.forEach(function(q){ a.quarters[q] = "missing"; a.schByQ[q] = 0; });
             set.forEach(function(p){
-                var c = cache[view.ay + "|" + p];
+                var c = cache[ay + "|" + p];
                 if(!c || !c.done) a.loading = true;
                 if(!c) return;
                 QTRS.forEach(function(q){
@@ -260,7 +295,7 @@ javascript:(function(){
             });
             var persons = {};
             list.forEach(function(g){
-                var names = g.who.length ? g.who : ["Unassigned (STAFF, TBA)"], n = g.who.length || 1;
+                var names = g.who.length ? g.who : [UNASSIGNED], n = g.who.length || 1;
                 var sch = g.sections.reduce(function(s, l){ return s + l.credits * l.enrl; }, 0);
                 var share = n > 1 && settings.coteach === "split" ? 1 / n : 1;
                 a.sch += sch;
@@ -276,11 +311,18 @@ javascript:(function(){
                 });
             });
             a.persons = Object.keys(persons).map(function(k){ return persons[k]; });
+            if(bare) return a;
+            /* Someone who teaches in more than one of the programs loaded has their FTE shared by their courses: with 1 of
+               5.5 courses in CLAS, CLAS counts 1 ÷ 5.5 of it. A joint course counts in each of its programs, as its SCH does. */
+            var whole = {};
+            if(set.length < prefixes.length) analyze(prefixes, ay, true).persons.forEach(function(p){ whole[p.name] = p.count; });
             a.persons.forEach(function(p){
-                p.base = baseLoad(p.cat);
-                p.adj = p.cat === "grad" || p.cat === "unassigned" ? 0 : adjOf(p.name);
-                p.load = p.base + p.adj;
-                p.fte = p.count / p.base;
+                var at = fteAt(p.name, ay);
+                p.appt = at.v;
+                p.since = at.since;
+                p.allCount = whole[p.name] || p.count;
+                p.share = Math.min(1, p.count / p.allCount);
+                p.fte = p.appt * p.share;
             });
             a.fteByCat = {};
             CAT_ORDER.forEach(function(c){ a.fteByCat[c] = 0; });
@@ -295,7 +337,7 @@ javascript:(function(){
             var top = Math.ceil(teachers.length / 4), teacherSch = teachers.reduce(function(s, p){ return s + p.sch; }, 0);
             a.topShare = teacherSch ? teachers.slice(0, top).reduce(function(s, p){ return s + p.sch; }, 0) / teacherSch : null;
             a.topCount = top;
-            a.tas = taEstimate(a.lectures, a.quizzes);
+            a.tas = taEstimate(a.lectures, a.quizzes, ay);
             a.taPositions = a.tas.reduce(function(s, t){ return s + t.tas; }, 0);
             a.taFte = a.taPositions / settings.taPerQuarter;
             a.taStudents = a.tas.reduce(function(s, t){ return s + t.students; }, 0);
@@ -304,11 +346,11 @@ javascript:(function(){
         /* TAs per course and quarter, estimated from quiz sections as in TimeScheduleMod: named TAs, plus sections with students
            but no TA at the course's usual load (sections per TA), after topping up named TAs who have fewer; empty sections
            aren't counted. A TA's load counts their quiz sections in the quarter across everything loaded. */
-        function taEstimate(lectures, quizzes){
+        function taEstimate(lectures, quizzes, ay){
             var rows = [];
             QTRS.forEach(function(q){
                 var all = [];
-                prefixes.forEach(function(p){ var c = cache[view.ay + "|" + p]; if(c && c[q]) all = all.concat(c[q].quizzes); });
+                prefixes.forEach(function(p){ var c = cache[ay + "|" + p]; if(c && c[q]) all = all.concat(c[q].quizzes); });
                 var load = {};
                 all.forEach(function(z){ if(/^TA\d+$/.test(z.leader)) load[z.leader] = (load[z.leader] || 0) + 1; });
                 var loads = Object.keys(load).map(function(k){ return load[k]; }), usual = loads.length ? mostCommon(loads, 2) : 2;
@@ -342,7 +384,7 @@ javascript:(function(){
         if(saved) ayOptions.push(saved.ay);
         else for(var y = cfg.newestAY || cfg.startAY; y > cfg.startAY - 7; y--) ayOptions.push(y);
         var ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M2.5 13.5h11"/></svg>';
-        var PANELS = [["programs", "Programs compared", "how each program uses its teaching resources"], ["faculty", "Faculty and instructor loads", "courses against each person’s load"], ["tas", "TA allocation", "students per TA, by course and quarter"]];
+        var PANELS = [["programs", "Programs compared", "how each program uses its teaching resources"], ["faculty", "Faculty and instructors", "each person’s FTE and courses"], ["tas", "TA allocation", "students per TA, by course and quarter"]];
         document.body.innerHTML = "<header><h1>FTECalc</h1>"
             + "<span class='ctl'>Academic year <select id='ay' aria-label='Academic year'" + (saved ? " disabled title='A saved file keeps one academic year'" : "") + ">" + ayOptions.map(function(y){ return "<option value='" + y + "'>" + ayLabel(y) + " (Aut, Win, Spr)</option>"; }).join("") + "</select></span>"
             + "<span class='ctl'>Program <select id='program' aria-label='Program' title='Show one program throughout the page'><option value='all'>All programs</option></select></span>"
@@ -358,7 +400,7 @@ javascript:(function(){
                 return "<div class='panel' id='panel-" + x[0] + "'><h2><button type='button' class='panel-toggle' data-panel='" + x[0] + "' aria-expanded='true' aria-controls='" + x[0] + "' title='Collapse or expand this section'><span class='chev'>▼</span>" + x[1] + "</button>"
                     + " <span class='sub'>" + x[2] + "</span></h2><div class='body' id='" + x[0] + "'></div></div>";
             }).join("")
-            + "<footer>Reads only the Time Schedule’s section listings: no student data, and TAs are counted, never named. " + (saved ? "Categories, loads and budgets are as saved. " : "Categories, loads and budgets stay in this browser. ") + "Summer is never counted. "
+            + "<footer>Reads only the Time Schedule’s section listings: no student data, and TAs are counted, never named. " + (saved ? "Categories, FTEs and budgets are as saved. " : "Categories, FTEs and budgets stay in this browser. ") + "Summer is never counted. "
             + "<span title='Past quarters show final enrollment. UW’s official SCH uses 10th-day counts, so these figures are close but not identical.'>Enrollment is live.</span></footer>";
 
         if(saved) document.body.classList.add("is-saved");
@@ -402,7 +444,7 @@ javascript:(function(){
             fteParts.push("TAs <b>" + f2(a.taFte) + "</b>");
             var set = view.program === "all" ? prefixes : [view.program], budget = 0, budgetSch = 0;
             set.forEach(function(p){ if(+budgets[p] > 0){ budget += +budgets[p]; budgetSch += analyzeCached(p).sch; } });
-            var unsetNote = a.unset ? "<div><button type='button' class='linkish' data-goto='faculty'>" + plural(a.unset, "instructor") + " without a category</button> <span class='note'>(counted at " + settings.unsetLoad + " courses a year)</span></div>" : "";
+            var unsetNote = a.unset ? "<div><button type='button' class='linkish' data-goto='faculty' title='Set them in the Faculty table to see FTE and SCH by category'>" + plural(a.unset, "instructor") + " without a category</button></div>" : "";
             document.getElementById("summary").innerHTML =
                 sect("Student credit hours", fmt(a.sch), QTRS.map(function(q){ return QS[q] + " <b>" + (a.quarters[q] === "ok" ? fmt(a.schByQ[q]) : "–") + "</b>"; }).join(" · ") + partial
                     + (a.varSkipped ? "<div class='note' title='Sections whose credits are listed as VAR have no fixed credits, so they’re left out'>" + plural(a.varSkipped, "variable-credit section") + " not counted</div>" : ""))
@@ -412,11 +454,11 @@ javascript:(function(){
                     : "<button type='button' class='pill-btn' data-open='settings'>Add the instructional (GOF) budget</button>");
         }
         var analyzed = {};
-        function analyzeCached(p){ var k = view.ay + "|" + p; return analyzed[k] || (analyzed[k] = analyze([p])); }
+        function analyzeCached(p){ var k = view.ay + "|" + p; return analyzed[k] || (analyzed[k] = analyze([p], view.ay)); }
         function renderPrograms(){
             if(!prefixes.length){ document.getElementById("programs").innerHTML = "<div class='empty'>Add one or more course prefixes above. Each prefix is a program.</div>"; return; }
             var rows = prefixes.map(function(p){ return { name: p, a: analyzeCached(p), budget: +budgets[p] || 0 }; });
-            if(prefixes.length > 1) rows.push({ name: "All programs", a: analyze(prefixes), budget: prefixes.reduce(function(s, p){ return s + (+budgets[p] || 0); }, 0), total: true });
+            if(prefixes.length > 1) rows.push({ name: "All programs", a: analyze(prefixes, view.ay), budget: prefixes.reduce(function(s, p){ return s + (+budgets[p] || 0); }, 0), total: true });
             var SHORT = { tt: "TT", teach: "Teaching", grad: "Grad", other: "Other", unset: "Not set", unassigned: "Unassigned" };
             var cats = CAT_ORDER.filter(function(c){ return rows.some(function(r){ return r.a.schByCat[c] > 0; }); });
             document.getElementById("programs").innerHTML = "<table><thead><tr><th>Program</th><th class='n'>SCH</th><th class='n'>Instructor<br>FTE</th><th class='n'>TA<br>FTE</th><th class='n'>SCH per<br>instructor FTE</th>"
@@ -441,24 +483,23 @@ javascript:(function(){
                 if(view.facSort === "name") return x.name.localeCompare(y.name);
                 return order(x) - order(y) || x.name.localeCompare(y.name);
             });
-            var th = function(key, label, cls){ return "<th" + (cls ? " class='" + cls + "'" : "") + (key ? " data-sort='" + key + "' title='Sort'" : "") + ">" + label + (view.facSort === key ? " ▾" : "") + "</th>"; };
-            el.innerHTML = "<table><thead><tr>" + th("name", "Instructor") + th("cat", "Category") + "<th class='n' title='Courses a year. Change a person’s number for a course release or an overload this year.'>Load</th>" + QTRS.map(function(q){ return "<th>" + QS[q] + "</th>"; }).join("")
-                + "<th class='n'>Courses</th>" + th("fte", "FTE", "n") + th("sch", "SCH", "n") + "<th class='n' title='Students per course; combined sections count as one class'>Avg<br>class</th><th>Balance</th></tr></thead><tbody>"
+            var th = function(key, label, cls, tip){ return "<th" + (cls ? " class='" + cls + "'" : "") + (key ? " data-sort='" + key + "'" : "") + (tip || key ? " title='" + (tip || "Sort") + "'" : "") + ">" + label + (view.facSort === key ? " ▾" : "") + "</th>"; };
+            var program = view.program === "all" ? "" : view.program;
+            el.innerHTML = "<table><thead><tr>" + th("name", "Instructor") + th("cat", "Category")
+                + th("fte", "FTE", "n", "Each person counts 1 FTE unless you change it: type 0.5, 1/3, ¾ and so on. A change applies from this year on. Click to sort.") + QTRS.map(function(q){ return "<th>" + QS[q] + "</th>"; }).join("")
+                + "<th class='n' title='Courses taught this year. They’re noted, but don’t change FTE.'>Courses</th>" + th("sch", "SCH", "n") + "<th class='n' title='Students per course; combined sections count as one class'>Avg<br>class</th><th>Balance</th></tr></thead><tbody>"
                 + ps.map(function(p){
                     var un = p.cat === "unassigned";
                     var catCell = un ? "<span class='dim'>STAFF or TBA</span>" : "<select class='cat" + (p.cat === "unset" ? " unset" : "") + "' data-person='" + esc(p.name) + "' aria-label='Category for " + esc(p.name) + "'>"
                         + ["unset", "tt", "teach", "grad", "other"].map(function(c){ return "<option value='" + c + "'" + (c === p.cat ? " selected" : "") + ">" + (c === "unset" ? "Not set" : CATS[c]) + "</option>"; }).join("") + "</select>";
-                    var kind = p.cat === "unset" || p.cat === "other" ? "The default load" : CATS[p.cat] + " load";
-                    var loadTip = p.adj ? kind + " is " + p.base + "; " + p.load + " in " + ayLabel(view.ay) + " (" + (p.adj < 0 ? plural(-p.adj, "course release") : plural(p.adj, "more course", "more courses")) + "). FTE still divides by " + p.base + "."
-                        : kind + ". Lower it for a course release, or raise it for an overload, in " + ayLabel(view.ay) + ". FTE still divides by " + p.base + ".";
-                    var loadCell = p.cat === "grad" ? "<span title='Each course counts " + settings.gradShare + " FTE'>" + (settings.gradShare === 0.25 ? "¼" : settings.gradShare) + " each</span>"
-                        : un ? p.load + " <span class='dim'>(default)</span>"
-                        : "<input class='load" + (p.adj ? " adj" : "") + "' type='number' min='0' max='12' step='0.5' data-load='" + esc(p.name) + "' value='" + p.load + "' title='" + esc(loadTip) + "' aria-label='Load for " + esc(p.name) + " in " + ayLabel(view.ay) + "'>";
+                    var two = function(x){ return Math.round(x * 100) / 100; };
+                    var fteTip = (p.since === null ? (un ? "Courses with no instructor named count no FTE. Give them some, e.g. for a lecturer still to be hired."
+                        : "1 FTE, as everyone is unless changed.") : f2(p.appt) + " since " + ayLabel(p.since) + ".") + " A change applies from " + ayLabel(view.ay) + " on.";
+                    var fteCell = "<input class='fte" + (p.since === null ? "" : " set") + "' inputmode='decimal' data-fte='" + esc(p.name) + "' value='" + f2(p.appt) + "' title='" + esc(fteTip) + "' aria-label='FTE for " + esc(p.name) + " in " + ayLabel(view.ay) + "'>"
+                        + (p.share < 1 ? "<span class='share dim' title='" + esc(p.name + " teaches " + two(p.allCount) + " courses in the prefixes loaded, " + two(p.count) + " of them in " + program + ", so " + program + " counts " + f2(p.fte) + " of their " + f2(p.appt) + " FTE.") + "'>" + f2(p.fte) + " here</span>" : "");
                     var cells = QTRS.map(function(q){ return "<td>" + (a.quarters[q] !== "ok" && a.quarters[q] !== "empty" ? "<span class='cc none' title='" + (a.loading ? "Loading" : a.quarters[q] === "error" ? "Couldn’t be read" : "Not published yet") + "'>…</span>" : p.courses[q].length ? p.courses[q].map(function(c){ return chipHtml(p, c.g, c); }).join("") : "<span class='cc none'>–</span>") + "</td>"; }).join("");
-                    var n = Math.round(p.count * 100) / 100, pill = p.cat === "grad" || un ? "<span class='pill plain'>" + n + "</span>"
-                        : "<span class='pill " + (n < p.load ? "under" : n > p.load ? "over" : "at") + "' title='" + (n < p.load ? "Under" : n > p.load ? "Over" : "At") + " this person’s load for " + ayLabel(view.ay) + "'>" + n + " of " + p.load + "</span>";
-                    return "<tr" + (un ? " class='unassigned'" : "") + "><td class='name'>" + esc(p.name) + "</td><td>" + catCell + "</td><td class='n'>" + loadCell + "</td>" + cells
-                        + "<td class='n'>" + pill + "</td><td class='n'>" + f2(p.fte) + "</td><td class='n'>" + fmt(p.sch) + "</td><td class='n'>" + (p.classes ? Math.round(p.students / p.classes) : "–") + "</td><td>" + (un ? "" : balance(p)) + "</td></tr>";
+                    return "<tr" + (un ? " class='unassigned'" : "") + "><td class='name'>" + esc(p.name) + "</td><td>" + catCell + "</td><td class='n'>" + fteCell + "</td>" + cells
+                        + "<td class='n'>" + two(p.count) + "</td><td class='n'>" + fmt(p.sch) + "</td><td class='n'>" + (p.classes ? Math.round(p.students / p.classes) : "–") + "</td><td>" + (un ? "" : balance(p)) + "</td></tr>";
                 }).join("") + "</tbody></table>";
         }
         function renderTAs(a){
@@ -475,19 +516,17 @@ javascript:(function(){
         }
         function renderSettings(){
             var num = function(id, label, value, attrs){ return "<label>" + label + " <input type='number' id='" + id + "' value='" + value + "' " + (attrs || "") + "></label>"; };
-            document.getElementById("settings").innerHTML = "<div class='set-head'>Annual loads (courses a year)</div><div class='set-grid'>"
-                + num("ttLoad", "Tenure track", settings.ttLoad, "min='1' max='12'") + num("teachLoad", "Teaching track", settings.teachLoad, "min='1' max='12'")
-                + num("unsetLoad", "Default (Not set, Other, unassigned)", settings.unsetLoad, "min='1' max='12'") + num("gradShare", "Grad instructor: FTE per course", settings.gradShare, "min='0' max='1' step='0.05'")
-                + num("taPerQuarter", "TA: one quarter is 1 ÷", settings.taPerQuarter, "min='1' max='12'")
+            document.getElementById("settings").innerHTML = "<div class='set-head'>Counting</div><div class='set-grid'>"
+                + num("taPerQuarter", "TA FTE: one quarter is 1 ÷", settings.taPerQuarter, "min='1' max='12'")
                 + "<label>Co-taught courses <select id='coteach'><option value='split'" + (settings.coteach === "split" ? " selected" : "") + ">split between instructors</option><option value='full'" + (settings.coteach === "full" ? " selected" : "") + ">count in full for each</option></select></label></div>"
                 + "<div class='set-head'>CAS minimum enrollment (⚠ on a course)</div><div class='set-grid'>" + num("casLower", "100–300 level", settings.casLower, "min='0'") + num("casUpper", "400–500 level", settings.casUpper, "min='0'") + "</div>"
                 + "<div class='set-head'>Instructional (GOF) budget, for cost per SCH</div>" + (prefixes.length ? prefixes.map(function(p){ return "<div class='budget'><span>" + esc(p) + "</span><input type='number' min='0' step='1000' data-budget='" + esc(p) + "' value='" + (budgets[p] || "") + "' placeholder='$'></div>"; }).join("") : "<p class='set-note'>Add a prefix first.</p>")
-                + "<p class='set-note'>" + (saved ? "Changes here aren’t kept in the saved file." : "Kept in this browser only.") + " Categories, and each person’s load this year, are set in the Faculty table.</p><button type='button' class='pill-btn' id='reset'>Reset loads to defaults</button>";
+                + "<p class='set-note'>" + (saved ? "Changes here aren’t kept in the saved file." : "Kept in this browser only.") + " Categories and each person’s FTE are set in the Faculty table.</p><button type='button' class='pill-btn' id='reset'>Reset to defaults</button>";
         }
         function render(){
             analyzed = {};
             renderChips();
-            var a = analyze(view.program === "all" ? prefixes : [view.program]);
+            var a = analyze(view.program === "all" ? prefixes : [view.program], view.ay);
             document.title = "FTECalc " + ayLabel(view.ay) + (saved ? " · saved" + (saved.note ? " · " + saved.note : "") : "");
             var saveBtn = document.getElementById("save-btn"), busy = prefixes.some(function(p){ var c = cache[view.ay + "|" + p]; return !c || !c.done; });
             saveBtn.disabled = !prefixes.length || busy;
@@ -536,21 +575,14 @@ javascript:(function(){
         });
         document.getElementById("faculty").addEventListener("change", function(e){
             var t = e.target;
-            if(t.matches("select.cat")){ var n = t.getAttribute("data-person"); people[n] = Object.assign({}, people[n], { cat: t.value }); store("ftecalc-people", people); render(); }
-            if(t.matches("input.load")){
-                /* Kept as the change from the category's load, for this academic year only. */
-                var m = t.getAttribute("data-load"), v = parseFloat(t.value);
-                if(v >= 0){
-                    var rec = Object.assign({}, people[m]), adj = v - baseLoad(catOf(m));
-                    rec.adj = Object.assign({}, rec.adj);
-                    if(adj) rec.adj[view.ay] = adj; else delete rec.adj[view.ay];
-                    if(!Object.keys(rec.adj).length) delete rec.adj;
-                    people[m] = rec;
-                    store("ftecalc-people", people);
-                }
+            if(t.matches("select.cat")){ setRec(t.getAttribute("data-person"), { cat: t.value }); render(); }
+            if(t.matches("input.fte")){
+                var v = parseFte(t.value);
+                if(v !== null) setFte(t.getAttribute("data-fte"), view.ay, v);
                 render();
             }
         });
+        document.getElementById("faculty").addEventListener("focusin", function(e){ if(e.target.matches("input.fte")) e.target.select(); });
         document.getElementById("faculty").addEventListener("click", function(e){ var th = e.target.closest("th[data-sort]"); if(th){ view.facSort = th.getAttribute("data-sort"); render(); } });
         var settingsBtn = document.getElementById("settings-btn"), box = document.getElementById("settings");
         function showSettings(open){ if(open) renderSettings(); box.hidden = !open; settingsBtn.setAttribute("aria-expanded", String(open)); }
@@ -566,7 +598,7 @@ javascript:(function(){
             store("ftecalc-settings", settings);
             render();
         });
-        box.addEventListener("click", function(e){ if(e.target.id === "reset"){ settings = Object.assign({}, DEFAULTS); store("ftecalc-settings", settings); renderSettings(); render(); } });
+        box.addEventListener("click", function(e){ if(e.target.id === "reset"){ settings = withDefaults({}); store("ftecalc-settings", settings); renderSettings(); render(); } });
         document.getElementById("summary").addEventListener("click", function(e){
             if(e.target.closest("[data-open='settings']")) return showSettings(true);
             if(e.target.closest("[data-goto='faculty']")) document.getElementById("panel-faculty").scrollIntoView({ behavior: "smooth", block: "start" });
@@ -584,7 +616,7 @@ javascript:(function(){
 
         /* ---- Save ----
            Saves the year's results as one HTML file that reopens this dashboard without the Time Schedule: the sections read
-           (instructor names, TAs only as labels), the settings, the categories and loads of the people in it, and the budgets.
+           (instructor names, TAs only as labels), the settings, the categories and FTEs of the people in it, and the budgets.
            Chrome's Save As dialog remembers the folder; other browsers download to Downloads (as in TimeScheduleMod). */
         function dataAsOf(){
             var times = prefixes.map(function(p){ var c = cache[view.ay + "|" + p]; return c && c.at; }).filter(Boolean).sort();
@@ -604,7 +636,8 @@ javascript:(function(){
                 QTRS.forEach(function(q){ pages[p][q] = c[q]; (c[q] ? c[q].lectures : []).forEach(function(l){ l.who.forEach(function(n){ names[n] = true; }); }); });
             });
             var keep = {}, money = {};
-            Object.keys(names).forEach(function(n){ if(people[n]) keep[n] = people[n]; });
+            names[UNASSIGNED] = true;
+            Object.keys(names).forEach(function(n){ if(rec(n)) keep[n] = rec(n); });
             prefixes.forEach(function(p){ if(budgets[p]) money[p] = budgets[p]; });
             var data = { version: 1, note: note, savedAt: new Date().toISOString(), dataAsOf: dataAsOf(), ay: view.ay, prefixes: prefixes.slice(), program: view.program,
                 settings: settings, people: keep, budgets: money, pages: pages };
@@ -632,7 +665,7 @@ javascript:(function(){
             dlg.innerHTML = "<div class='dlg' role='dialog' aria-modal='true' aria-labelledby='save-title'><h2><span id='save-title'>Save results</span><button type='button' class='dlg-x' aria-label='Close'>×</button></h2><div class='dlg-body'>"
                 + "<div class='dlg-row'><b>Note</b><div><input id='save-note' maxlength='80' placeholder='e.g. 10th day of Spring' aria-label='Note'><div class='picks'>" + picks.map(function(x){ return "<button type='button'>" + x + "</button>"; }).join("") + "</div></div></div>"
                 + "<div class='dlg-row'><b>Data as of</b><div class='dlg-val'><span id='save-when'></span><label class='dlg-check'><input type='checkbox' id='save-reload' checked>Reload from the Time Schedule first, so the time is exact</label></div></div>"
-                + "<div class='dlg-row'><b>Includes</b><div class='dlg-val'>" + esc(ayLabel(view.ay) + " · " + prefixes.join(", ")) + ": the totals, and each instructor’s courses, category and load. <span class='dim'>Share it only with people who should see instructors’ loads.</span></div></div>"
+                + "<div class='dlg-row'><b>Includes</b><div class='dlg-val'>" + esc(ayLabel(view.ay) + " · " + prefixes.join(", ")) + ": the totals, and each instructor’s courses, category and FTE. <span class='dim'>Share it only with people who should see instructors’ teaching.</span></div></div>"
                 + "<div class='dlg-row'><b>File</b><div class='dlg-file' id='save-file'></div></div><div class='dlg-status' id='save-status' role='status'></div></div>"
                 + "<div class='dlg-foot'><button type='button' class='dlg-cancel'>Cancel</button><button type='button' class='dlg-save'>" + ICON + (window.showSaveFilePicker ? "Save file…" : "Save file") + "</button></div></div>";
             document.body.appendChild(dlg);

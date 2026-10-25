@@ -14,7 +14,7 @@ module.exports = async (check, port) => {
     await app.key('Enter', 'Enter', 13);
     await app.waitFor('/7,395/.test(document.getElementById("summary").textContent) && !document.getElementById("save-btn").disabled');
     for (const [name, cat] of Object.entries(CATS)) await app.choose(`select.cat[data-person="${name}"]`, cat);
-    await app.evaluate(`(() => { const i = document.querySelector('input.load[data-load="Prof, Alpha"]'); i.value = "3"; i.dispatchEvent(new Event("change", { bubbles: true })); })()`);
+    await app.evaluate(`(() => { const i = document.querySelector('input.fte[data-fte="Prof, Alpha"]'); i.value = "1/2"; i.dispatchEvent(new Event("change", { bubbles: true })); })()`);
     await app.click('#settings-btn');
     await app.evaluate('(() => { const i = document.querySelector(`[data-budget="PHIL"]`); i.value = 1000000; i.dispatchEvent(new Event("change", { bubbles: true })); })()');
     await app.key('Escape', 'Escape', 27);
@@ -44,6 +44,7 @@ module.exports = async (check, port) => {
     const banner = await s.evaluate('document.querySelector(".saved-banner").textContent');
     check('a SAVED banner with the note and the year', /^SAVED10th day of Spring2025–26 · PHIL, CLAS · data as of .*Saved .* · numbers don’t update$/.test(banner), banner);
     check('one academic year, no prefix box, no Save', await s.evaluate('document.getElementById("ay").disabled && document.getElementById("ay").options.length === 1 && getComputedStyle(document.getElementById("prefix-input")).display === "none" && getComputedStyle(document.getElementById("save-btn")).display === "none"'));
+    check('the saved file keeps Alpha’s FTE', (await s.evaluate('document.querySelector(\'input.fte[data-fte="Prof, Alpha"]\').value')) === '0.50');
     check('the tab title says it’s saved', (await s.evaluate('document.title')) === 'FTECalc 2025–26 · saved · 10th day of Spring');
     await s.evaluate(`(() => { const i = document.querySelector('select.cat[data-person="Prof, Beta"]'); i.value = "teach"; i.dispatchEvent(new Event("change", { bubbles: true })); })()`);
     check('changes in a saved file work but aren’t stored', (await s.evaluate('localStorage.length')) === 0 && (await s.evaluate('document.querySelector(\'select.cat[data-person="Prof, Beta"]\').value')) === 'teach');

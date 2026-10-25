@@ -44,29 +44,29 @@ This short script loads the latest FTECalc from this repository each time you cl
 2. Click **FTECalc**. It opens in a new tab on that quarter's academic year. From a Winter, Spring or Summer page, the year menu also offers the next academic year, since its Autumn may already be published.
    - Clicked anywhere else, FTECalc says it's installed and gives the steps, with a button to the Time Schedule. On the Time Schedule's front page, it asks you to pick a quarter. If Chrome blocks the new tab, it says to allow pop-ups.
 3. Type one or more course prefixes, such as `PHIL, CLAS`, and press Enter. Each prefix is a program.
-4. In **Faculty and instructor loads**, set each instructor's category once. FTECalc remembers it.
-5. For a course release or an overload, change that person's **Load** for the year.
+4. In **Faculty and instructors**, set each instructor's category once. FTECalc remembers it.
+5. Everyone counts 1 FTE. For someone part time, change their **FTE**, e.g. to `0.5` or `1/3`.
 6. To keep the results, click **Save**.
 
 ## What it shows
 
 It serves three purposes:
-- **Fair faculty loads:** each instructor's courses against their load.
+- **Faculty teaching:** each instructor's FTE, courses and SCH.
 - **TA allocation:** students per TA, by course and quarter.
 - **Comparing programs:** how each program uses its teaching resources, e.g. SCH per FTE, who teaches the SCH, and cost per SCH.
 
 The page has:
 - **A summary:** SCH (with each quarter), instructional FTE by category, SCH per FTE (with and without TAs), and cost per SCH.
 - **Programs compared:** one row per prefix plus a total. Columns: SCH, instructor FTE, TA FTE, SCH per instructor FTE, a bar of who teaches the SCH, the share taught by the top quarter of instructors, students per TA, and cost per SCH.
-- **Faculty and instructor loads:** for each person:
-  - category and load
+- **Faculty and instructors:** for each person:
+  - category and FTE
   - their courses in each quarter, as chips whose hover gives the section, credits and enrollment
-  - courses against load (e.g. "3.5 of 4")
-  - FTE, SCH and average class size
+  - how many courses that makes
+  - SCH and average class size
   - how evenly their SCH is spread across their courses
 - **TA allocation:** each course with quiz sections, per quarter. It shows students, quiz sections, estimated TAs and students per TA. Values well above or below the median are highlighted.
 
-The **Program** menu in the header narrows the whole page to one prefix. The **⚙** menu holds the loads, the co-teaching rule, the CAS minimums and the budgets. Click a panel's title to collapse or expand it; FTECalc remembers which are closed.
+The **Program** menu in the header narrows the whole page to one prefix. The **⚙** menu holds the TA divisor, the co-teaching rule, the CAS minimums and the budgets. Click a panel's title to collapse or expand it; FTECalc remembers which are closed.
 
 **Summer is separate.** Summer quarter is never part of an FTE figure.
 
@@ -74,22 +74,20 @@ The **Program** menu in the header narrows the whole page to one prefix. The **�
 
 The unit is the academic year: Autumn, Winter and Spring.
 
-| Who | Their FTE | Example |
-|---|---|---|
-| Tenure-track faculty | courses taught in the year ÷ 4 | teaching 1 + 2 + 1 → **1.0** |
-| Teaching-track faculty and teaching professors | courses taught in the year ÷ 6 | teaching 2 + 2 + 1 → **0.83** |
-| Graduate instructors of record | ¼ per course, like a tenure-track course | one course → **0.25** |
-| Other | courses ÷ the default load (4) | 2 courses → **0.5** |
-| Not set yet | courses ÷ the default load | 2 courses → **0.5** |
-| Unassigned courses (STAFF, TBA) | courses ÷ the default load | 2 courses → **0.5** |
-| TAs | ⅙ per TA per quarter (a 50% appointment for a third of the year) | 20 + 16 + 14 TAs → **8.3** |
+| Who | Their FTE |
+|---|---|
+| Everyone teaching that year: faculty, lecturers, graduate instructors | **1**, unless you change it |
+| Unassigned courses (STAFF, TBA) | **0**, unless you change it |
+| TAs | ⅙ per TA per quarter (a 50% appointment for a third of the year): 20 + 16 + 14 TAs → **8.3** |
 
-Every course counts as 1, whatever its credits or size. All the loads can be changed in ⚙.
-
-- **Categories.** The Time Schedule doesn't say who is faculty, a lecturer or a graduate student. You set each instructor's category in the Faculty table, and FTECalc keeps it in your browser. Until then they count at the default load, and the summary says how many still need one.
-- **Course releases and overloads.** Each person's Load can be changed for one academic year: lower for a course release, higher for an overload. The changed number is highlighted, and its hover says what it was changed from. It's kept as a change from the category's load, so it follows if that load changes in ⚙, and it applies only to that year.
-  - The change sets what the person's courses are measured against: a tenure-track member with a release who teaches 3 courses shows "3 of 3".
-  - **FTE doesn't change.** FTE is teaching delivered, so it still divides by the category's load: those 3 courses are 0.75 FTE. A release therefore shows up as less teaching FTE, which is what program comparisons need.
+- **Courses are noted, not counted.** The Faculty table shows how many courses each person teaches, but a person is 1 FTE whether they teach 3 courses or 6. Someone who teaches nothing in the year (on leave, say) isn't listed and counts nothing.
+- **Changing a person's FTE.** Type a decimal or a fraction in their **FTE** box: `0.5`, `.75`, `1/3`, `¾`, `50%`. It's kept to two decimals, so ⅓ is 0.33. A changed FTE is highlighted.
+  - **A change applies from that year on**, until a later change. Lowering someone to 0.5 in 2025–26 keeps them at 0.5 in 2026–27; earlier years stay at 1. The box's hover says since when.
+  - A grad instructor counts 1 like everyone else. Give them less if their appointment is part of a year.
+  - The Unassigned row can be given FTE too, e.g. for a lecturer still to be hired.
+- **People in more than one program.** With several prefixes loaded, a person's FTE is shared by their courses. Someone with 1 of their 5.5 courses in CLAS counts 1 ÷ 5.5 of their FTE in CLAS's row; the Faculty table shows "0.18 here" when you pick CLAS in the Program menu. A joint course counts in each of its programs, as its SCH does. Courses in prefixes you haven't loaded aren't seen, so load all the prefixes a person teaches in.
+- **Categories.** The Time Schedule doesn't say who is faculty, a lecturer or a graduate student. You set each instructor's category in the Faculty table, and FTECalc keeps it in your browser. Categories split the FTE and SCH by kind of instructor; until they're set, people count under "Not set", and the summary says how many still need one.
+- **Name spellings.** Categories and FTEs are kept under the name as the Time Schedule spells it. When a middle initial comes or goes, the new spelling uses the old one's category and FTE until you change them.
 - **Co-taught courses** (instructors listed as `A/B`) count ½ to each of two instructors, ⅓ to each of three, and so on. Their SCH is split the same way. ⚙ can count the course in full for each instructor instead; the SCH is still split.
 - **The current year.** Until Winter and Spring are published, the year is partial and marked that way. The academic year menu goes back seven years.
 
@@ -127,7 +125,7 @@ Hover over a course's TA count to see the arithmetic.
 
 - **No student data.** FTECalc reads only the Time Schedule's section listings, which UW shows after sign-in.
 - **TA names are never stored or shown.** As each page loads, names are replaced with labels, and only counts appear.
-- **Instructor loads are personnel information.** Instructors of record are listed on the Time Schedule. The categories, loads and budgets you enter are kept only in your browser.
+- **Instructors' FTEs are personnel information.** Instructors of record are listed on the Time Schedule. The categories, FTEs and budgets you enter are kept only in your browser.
 
 ## Compared with Ben Marwick's Instructor Workload Dashboard
 
@@ -140,14 +138,14 @@ Ben's [Time Schedule tools](https://github.com/benmarwick/uw-anthro-web-helpers)
 - **How concentrated SCH is** among instructors (here, the share taught by the top quarter).
 
 Where FTECalc differs:
-- **FTE, not just SCH:** categories and annual loads turn courses into FTE.
+- **FTE, not just SCH:** each person's FTE, so programs can compare SCH per FTE.
 - **TAs:** estimated from quiz sections and counted in FTE. Ben's dashboard skips quiz sections.
 - **Programs side by side,** with cost per SCH from the instructional budget.
-- **Combined and joint-listed sections count once** for load. Ben's dashboard counts each listing.
+- **Combined and joint-listed sections count once** as a course. Ben's dashboard counts each listing.
 - **Honors sections count;** Ben's dashboard leaves them out.
 - **Sections with no one enrolled** count as a course taught; Ben's dashboard skips them.
 - **STAFF and TBA** form one "Unassigned" row instead of appearing as instructors.
-- **No SCH target slider or histogram:** each person is measured against their own load instead.
+- **No SCH target slider or histogram.**
 
 ## Saving results
 
@@ -157,23 +155,24 @@ Where FTECalc differs:
   - **Reload first** (on by default), so the "data as of" time is exact.
   - **The file name**, made from the year, the prefixes, the time and the note.
 - **Where it goes:** Chrome's Save As dialog remembers the folder used last time. Other browsers save to Downloads.
-- **What's in it:** each instructor's courses, category and load, plus the settings and budgets for those programs. TAs appear only as counts.
-  - Share the file only with people who should see instructors' loads.
+- **What's in it:** each instructor's courses, category and FTE, plus the settings and budgets for those programs. TAs appear only as counts.
+  - Share the file only with people who should see instructors' teaching.
 - **Opening the file:**
   - A **SAVED** banner shows the note, the year, the prefixes and when the data was read.
-  - The numbers don't update. Categories and loads can still be changed there to try things out, but those changes aren't kept.
+  - The numbers don't update. Categories and FTEs can still be changed there to try things out, but those changes aren't kept.
 
 ## Decisions
 
 All settled (Sept 29, 2026):
 - **Purposes:** the three above.
-- **Loads:** 4 courses a year for tenure track and 6 for teaching track. A graduate instructor counts ¼ per course. A TA counts ⅙ per quarter.
+- **Loads:** 4 courses a year for tenure track and 6 for teaching track. A graduate instructor counts ¼ per course. A TA counts ⅙ per quarter. (Replaced Oct 25, 2026; see below.)
 - **Courses:** every course counts as 1.
 - **Summer:** never part of FTE.
 - **Enrollment:** live.
 - **Budget:** the instructional budget (GOF).
-- **Saved results:** include both the totals and the instructor loads.
-- **Course releases** (Oct 1, 2026): a person's load can be changed for a year. FTE stays courses ÷ the category's load.
+- **Saved results:** include both the totals and each instructor's teaching.
+- **Course releases** (Oct 1, 2026): a person's load could be changed for a year.
+- **One person, one FTE** (Oct 25, 2026): replaces the loads and course releases. Everyone counts 1 FTE unless changed; courses are noted but don't change FTE.
 
 ## For maintainers
 
