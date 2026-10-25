@@ -2,7 +2,7 @@ javascript:(function(){
     /* FTECalc: teaching FTE and student credit hours (SCH) for an academic year, from the UW Time Schedule.
        Run it on any Time Schedule quarter page (e.g. /students/timeschd/AUT2026/). It reads the Autumn, Winter and Spring
        pages of the course prefixes you choose (Summer is never counted) and opens a dashboard: a summary, programs
-       compared, each instructor's load, and TA allocation. It reads only the Time Schedule's section listings, so no
+       compared, each instructor's FTE and courses, and TA allocation; an instructor's name opens their teaching history. It reads only the Time Schedule's section listings, so no
        student data; TA names become TA1, TA2... as pages load. Categories, FTEs and budgets you set stay in this browser.
        The prefix list and the way section lines are read follow Ben Marwick's Time Schedule tools (MIT license; see
        LICENSE), as do several ideas: splitting co-taught sections, the CAS minimum-enrollment warning, how evenly an
@@ -97,7 +97,19 @@ javascript:(function(){
         + '.saved-banner{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:#fbf6e6;border-bottom:1px solid #e6d9b0;padding:9px 25px;font-size:14px;color:#3d2f0e}'
         + '.saved-tag{background:#85754d;color:#fff;font-size:11px;font-weight:700;letter-spacing:.08em;border-radius:4px;padding:3px 8px}.saved-note{font-weight:700;font-size:15px;color:#2e1a5c}.saved-meta{color:#6b5a2a}'
         + '.saved-right{margin-left:auto;font-size:12px;color:#85754d;cursor:help}.is-saved #prefix-input,.is-saved #save-btn,.is-saved .chip button{display:none}.is-saved #save-btn+#settings-btn{margin-left:auto}#chips{display:inline-flex;flex-wrap:wrap;gap:6px}.is-saved .chip{padding-right:11px}'
-        + '@media (max-width:600px){header{padding:12px 16px}.bar,.summary,.panel{margin-left:16px;margin-right:16px}footer{margin:0 16px 16px}#settings{right:16px;width:calc(100vw - 32px)}.set-grid{grid-template-columns:1fr}}'
+        + '.who{background:none;border:0;padding:0;font:inherit;font-weight:600;color:inherit;cursor:pointer;text-align:left}.who:hover{color:#4b2e83;text-decoration:underline}'
+        + 'body.hist-open{overflow:hidden}#history{position:fixed;inset:0;z-index:900;background:#f4f2f8;overflow:auto}'
+        + '.hist-bar{position:sticky;top:0;z-index:2;background:#2e1a5c;color:#e8e3d3;padding:10px 25px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}.hist-bar .picks{margin:0}'
+        + '.hist-back{background:#fff;color:#2e1a5c;border:0;border-radius:16px;padding:6px 14px;font:600 13px inherit;font-family:inherit;cursor:pointer}.hist-print{margin-left:auto}'
+        + '.hist-page{background:#fff;max-width:1100px;margin:15px auto 25px;border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.05);padding:18px 24px 22px}'
+        + '.hist-page h2{margin:0;color:#2e1a5c;font-size:23px}.hist-page h2 small{font-size:14px;font-weight:600;color:#85754d;margin-left:8px}.hist-sub{color:#555;font-size:13px;margin-top:3px}'
+        + '.hist-names{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:10px 0 2px;font-size:12px;color:#666}.hist-names .chip{font-size:12px;font-weight:600;padding:2px 6px 2px 10px}.hist-names .chip.self{padding-right:10px}'
+        + '#hist-add{font:inherit;font-size:12px;padding:3px 8px;border:1px solid #ccc;border-radius:12px;width:220px}#hist-add.bad{border-color:#b91c1c}#hist-note{font-size:12px;color:#777;min-height:16px;margin:6px 0}#hist-note.warn{color:#b45309}'
+        + '.tiles-head{font-size:12px;color:#85754d;font-weight:600;text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px}.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}'
+        + '.tile{border:1px solid #e8e3f3;border-radius:6px;padding:8px 12px;cursor:help}.tile .tl{font-size:12px;color:#666}.tile .tv{font-size:15px;color:#444;margin-top:2px}.tile .tv b{font-size:21px;color:#2e1a5c}.tile .td{font-size:13px;font-weight:600;color:#444;margin-top:1px}'
+        + '.hist-chart{display:block;width:100%;height:auto;margin:16px 0 6px}.hist-table td.list{font-size:12px;color:#444;line-height:1.5;min-width:220px}tr.off td{color:#999}'
+        + '@media print{body{background:#fff}body.hist-open{overflow:visible}body.hist-open>*:not(#history){display:none!important}#history{position:static;overflow:visible;background:#fff}.hist-bar,#hist-add,.hist-names button{display:none!important}.hist-page{box-shadow:none;margin:0;max-width:none;padding:0}.tile{break-inside:avoid}}'
+        + '@media (max-width:600px){header{padding:12px 16px}.bar,.summary,.panel{margin-left:16px;margin-right:16px}footer{margin:0 16px 16px}#settings{right:16px;width:calc(100vw - 32px)}.set-grid{grid-template-columns:1fr}.hist-bar{padding:10px 16px}.hist-page{margin:12px 16px;padding:14px 16px}}'
         + '</style></head><body>';
     w.document.open();
     w.document.write(PAGE_HTML + "<script>(" + app.toString() + ")(" + JSON.stringify(cfg).replace(/</g, "\\u003c") + ");<\/script></body></html>");
@@ -384,7 +396,7 @@ javascript:(function(){
         if(saved) ayOptions.push(saved.ay);
         else for(var y = cfg.newestAY || cfg.startAY; y > cfg.startAY - 7; y--) ayOptions.push(y);
         var ICON = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 2v8M4.5 6.5 8 10l3.5-3.5M2.5 13.5h11"/></svg>';
-        var PANELS = [["programs", "Programs compared", "how each program uses its teaching resources"], ["faculty", "Faculty and instructors", "each person’s FTE and courses"], ["tas", "TA allocation", "students per TA, by course and quarter"]];
+        var PANELS = [["programs", "Programs compared", "how each program uses its teaching resources"], ["faculty", "Faculty and instructors", "each person’s FTE and courses; a name opens their history"], ["tas", "TA allocation", "students per TA, by course and quarter"]];
         document.body.innerHTML = "<header><h1>FTECalc</h1>"
             + "<span class='ctl'>Academic year <select id='ay' aria-label='Academic year'" + (saved ? " disabled title='A saved file keeps one academic year'" : "") + ">" + ayOptions.map(function(y){ return "<option value='" + y + "'>" + ayLabel(y) + " (Aut, Win, Spr)</option>"; }).join("") + "</select></span>"
             + "<span class='ctl'>Program <select id='program' aria-label='Program' title='Show one program throughout the page'><option value='all'>All programs</option></select></span>"
@@ -498,7 +510,8 @@ javascript:(function(){
                     var fteCell = "<input class='fte" + (p.since === null ? "" : " set") + "' inputmode='decimal' data-fte='" + esc(p.name) + "' value='" + f2(p.appt) + "' title='" + esc(fteTip) + "' aria-label='FTE for " + esc(p.name) + " in " + ayLabel(view.ay) + "'>"
                         + (p.share < 1 ? "<span class='share dim' title='" + esc(p.name + " teaches " + two(p.allCount) + " courses in the prefixes loaded, " + two(p.count) + " of them in " + program + ", so " + program + " counts " + f2(p.fte) + " of their " + f2(p.appt) + " FTE.") + "'>" + f2(p.fte) + " here</span>" : "");
                     var cells = QTRS.map(function(q){ return "<td>" + (a.quarters[q] !== "ok" && a.quarters[q] !== "empty" ? "<span class='cc none' title='" + (a.loading ? "Loading" : a.quarters[q] === "error" ? "Couldn’t be read" : "Not published yet") + "'>…</span>" : p.courses[q].length ? p.courses[q].map(function(c){ return chipHtml(p, c.g, c); }).join("") : "<span class='cc none'>–</span>") + "</td>"; }).join("");
-                    return "<tr" + (un ? " class='unassigned'" : "") + "><td class='name'>" + esc(p.name) + "</td><td>" + catCell + "</td><td class='n'>" + fteCell + "</td>" + cells
+                    var who = un || saved ? esc(p.name) : "<button type='button' class='who' data-history='" + esc(p.name) + "' title='" + esc(p.name) + "’s teaching history, every year the Time Schedule has'>" + esc(p.name) + "</button>";
+                    return "<tr" + (un ? " class='unassigned'" : "") + "><td class='name'>" + who + "</td><td>" + catCell + "</td><td class='n'>" + fteCell + "</td>" + cells
                         + "<td class='n'>" + two(p.count) + "</td><td class='n'>" + fmt(p.sch) + "</td><td class='n'>" + (p.classes ? Math.round(p.students / p.classes) : "–") + "</td><td>" + (un ? "" : balance(p)) + "</td></tr>";
                 }).join("") + "</tbody></table>";
         }
@@ -548,6 +561,204 @@ javascript:(function(){
             render();
         }
 
+        /* ---- A person's history ----
+           Every academic year the Time Schedule has, for the prefixes loaded, read back from the newest until two years in a
+           row have no pages: after a colleague's one-page teaching history, with no salary. A person's courses are
+           found under each spelling of their last and first name ("Smith, John A" and "Smith, John"); more names can be added,
+           e.g. after a name change, and a match that isn't them dropped. Only whole academic years count, never summer. Years
+           are grouped into periods of one, two or three, ending with the latest, and the first period is compared with the
+           last, per year taught. Print gives a one-page report (or a PDF). */
+        var hist = null;
+        function openHistory(name){
+            closeHistory();
+            hist = { name: name, group: +load("ftecalc-history-group", 3) || 3, years: [], partial: [], errors: [], misses: 0, next: cfg.newestAY || cfg.startAY, loading: true };
+            var el = document.createElement("div");
+            el.id = "history";
+            el.setAttribute("role", "dialog"); el.setAttribute("aria-modal", "true"); el.setAttribute("aria-labelledby", "hist-title");
+            el.innerHTML = "<div class='hist-bar'><button type='button' class='hist-back'>‹ Back to " + ayLabel(view.ay) + "</button><span>Periods</span><span class='picks'>"
+                + [1, 2, 3].map(function(n){ return "<button type='button' data-group='" + n + "'>" + plural(n, "year") + "</button>"; }).join("") + "</span>"
+                + "<button type='button' class='pill-btn hist-print' title='Print this page, or save it as a PDF from the print dialog'>Print</button></div>"
+                + "<div class='hist-page'><h2 id='hist-title'>" + esc(name) + "<small>Teaching history</small></h2><div class='hist-sub' id='hist-sub'></div>"
+                + "<div class='hist-names'><span>Found as</span><span id='hist-chips'></span><input id='hist-add' list='hist-all' placeholder='Add another name' title='Another name they taught under, e.g. before a name change' spellcheck='false' autocomplete='off' aria-label='Add another name'><datalist id='hist-all'></datalist></div>"
+                + "<div id='hist-note' role='status'></div><div id='hist-body'></div></div>";
+            document.body.appendChild(el);
+            document.body.classList.add("hist-open");
+            el.addEventListener("click", function(e){
+                var t = e.target;
+                if(t.closest(".hist-back")) return closeHistory();
+                if(t.closest(".hist-print")) return window.print();
+                var g = t.closest("[data-group]"), drop = t.closest("[data-drop]");
+                if(g){ hist.group = +g.getAttribute("data-group"); store("ftecalc-history-group", hist.group); renderHistory(); }
+                if(drop) changeNames(drop.getAttribute("data-drop"), false);
+            });
+            var add = el.querySelector("#hist-add");
+            var addName = function(){
+                var n = add.value.trim(), found = historyNames().all.filter(function(x){ return x.toLowerCase() === n.toLowerCase(); })[0];
+                add.classList.toggle("bad", !!n && !found);
+                add.title = n && !found ? "No one by that name in these years" : "Another name they taught under, e.g. before a name change";
+                if(found){ add.value = ""; changeNames(found, true); }
+            };
+            /* Enter in a box with suggestions doesn't count as a change in Chrome, so it's handled too. */
+            add.addEventListener("change", addName);
+            add.addEventListener("keydown", function(e){ if(e.key === "Enter"){ e.preventDefault(); addName(); } });
+            add.addEventListener("input", function(){ add.classList.remove("bad"); });
+            renderHistory();
+            el.querySelector(".hist-back").focus();
+            readBack(hist);
+        }
+        function closeHistory(){
+            var el = document.getElementById("history");
+            if(el) el.remove();
+            document.body.classList.remove("hist-open");
+            hist = null;
+        }
+        document.addEventListener("keydown", function(e){ if(e.key === "Escape" && hist) closeHistory(); });
+        /* Two years at a time, newest first. Pages that couldn't be read before are tried again. */
+        function readBack(h){
+            if(h !== hist) return;
+            if(h.next < 1990 || h.errors.length || h.misses >= (h.years.length || h.partial.length ? 2 : 3)){ h.loading = false; return renderHistory(); }
+            var batch = [h.next, h.next - 1];
+            h.next -= 2;
+            batch.forEach(function(y){ prefixes.forEach(function(p){ var c = cache[y + "|" + p]; if(c && c.done && QTRS.some(function(q){ return c[q].status === "error"; })) delete cache[y + "|" + p]; }); });
+            Promise.all(batch.map(function(y){ return Promise.all(prefixes.map(function(p){ return loadPrefix(p, y, true); })); })).then(function(){
+                if(h !== hist) return;
+                batch.forEach(function(y){
+                    var st = function(q){ return prefixes.map(function(p){ return cache[y + "|" + p][q].status; }); };
+                    var all = [].concat.apply([], QTRS.map(st));
+                    if(all.indexOf("error") !== -1) h.errors.push(y);
+                    else if(all.every(function(x){ return x === "missing"; })) h.misses++;
+                    else {
+                        h.misses = 0;
+                        (QTRS.every(function(q){ return st(q).some(function(x){ return x !== "missing"; }); }) ? h.years : h.partial).push(y);
+                    }
+                });
+                renderHistory();
+                readBack(h);
+            });
+        }
+        /* Every instructor named in the years read, and which of them are this person: the name itself, other spellings of it
+           (unless dropped), and names added. */
+        function historyNames(){
+            var r = rec(hist.name) || {}, k = nameKey(hist.name), all = {}, names = {};
+            hist.years.concat(hist.partial).forEach(function(y){
+                prefixes.forEach(function(p){ var c = cache[y + "|" + p]; QTRS.forEach(function(q){ (c && c[q] ? c[q].lectures : []).forEach(function(l){ l.who.forEach(function(n){ all[n] = true; }); }); }); });
+            });
+            Object.keys(all).forEach(function(n){ if(nameKey(n) === k && (r.notAka || []).indexOf(n) === -1) names[n] = "spelling"; });
+            (r.aka || []).forEach(function(n){ names[n] = "added"; });
+            names[hist.name] = "self";
+            return { all: Object.keys(all).sort(), names: names };
+        }
+        function changeNames(n, add){
+            var r = rec(hist.name) || {}, aka = (r.aka || []).filter(function(x){ return x !== n; }), not = (r.notAka || []).filter(function(x){ return x !== n; });
+            if(add) aka.push(n); else if(nameKey(n) === nameKey(hist.name)) not.push(n);
+            setRec(hist.name, { aka: aka.length ? aka : undefined, notAka: not.length ? not : undefined });
+            renderHistory();
+        }
+        /* One academic year for this person: their courses (labels), course count, classes, students, SCH and FTE, beside
+           everyone's SCH and instructor FTE that year. */
+        function historyYear(y, names){
+            var a = analyze(prefixes, y), multi = prefixes.length > 1;
+            var o = { ay: y, count: 0, classes: 0, students: 0, sch: 0, fte: 0, courses: [], allSch: a.sch, allFte: a.instrFte };
+            a.persons.forEach(function(p){
+                if(!names[p.name]) return;
+                o.count += p.count; o.classes += p.classes; o.students += p.students; o.sch += p.sch;
+                o.fte = Math.max(o.fte, p.fte);
+                QTRS.forEach(function(q){ p.courses[q].forEach(function(c){ o.courses.push(c.g.sections.map(function(l){ return (multi ? l.prefix + " " : "") + l.number; }).join("/") + (c.share < 1 ? (c.share === 0.5 ? "½" : " (" + f2(c.share) + ")") : "")); }); });
+            });
+            return o;
+        }
+        function niceStep(max){
+            var raw = max / 3, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+            return [1, 2, 2.5, 5, 10].map(function(m){ return m * mag; }).filter(function(v){ return v >= raw; })[0];
+        }
+        function compact(v){ return v >= 1000 ? (Math.round(v / 100) / 10) + "K" : String(v); }
+        /* SCH each year as columns, on the periods' bands; the first and last values labelled, the rest on hover. */
+        function historyChart(ys, periods){
+            var W = 900, x0 = 40, top = 22, base = 122, n = ys.length, slot = (W - x0) / n, bw = Math.min(24, slot - 2);
+            var max = Math.max.apply(null, ys.map(function(o){ return o.sch; }).concat([1])), step = niceStep(max), ymax = Math.ceil(max / step) * step;
+            var Y = function(v){ return base - (base - top) * v / ymax; }, out = "", i = 0;
+            periods.forEach(function(p, k){
+                var x = x0 + i * slot, w = p.years.length * slot;
+                if(periods.length > 1 && k % 2 === 0 && periods.some(function(q){ return q.years.length > 1; })) out += "<rect x='" + x + "' y='" + (top - 14) + "' width='" + w + "' height='" + (base - top + 14) + "' fill='#f6f4fa'/>";
+                if(w >= 56 || k % Math.ceil(56 / w) === 0) out += "<text x='" + (x + w / 2) + "' y='" + (base + 17) + "' text-anchor='middle' font-size='11' fill='#666'>" + p.label + "</text>";
+                i += p.years.length;
+            });
+            for(var v = 0; v <= ymax; v += step) out += "<line x1='" + x0 + "' x2='" + W + "' y1='" + Y(v) + "' y2='" + Y(v) + "' stroke='" + (v ? "#ebe8f0" : "#c9c4d4") + "' stroke-width='1'/><text x='" + (x0 - 6) + "' y='" + (Y(v) + 4) + "' text-anchor='end' font-size='11' fill='#777'>" + compact(v) + "</text>";
+            var taught = ys.filter(function(o){ return o.count; }), ends = taught.length ? [taught[0].ay, taught[taught.length - 1].ay] : [];
+            ys.forEach(function(o, k){
+                var cx = x0 + (k + 0.5) * slot, x = cx - bw / 2, y = Y(o.sch), r = Math.min(4, base - y);
+                if(o.sch > 0) out += "<path d='M" + x + "," + base + "V" + (y + r) + "Q" + x + "," + y + " " + (x + r) + "," + y + "H" + (x + bw - r) + "Q" + (x + bw) + "," + y + " " + (x + bw) + "," + (y + r) + "V" + base + "Z' fill='#4b2e83'/>";
+                if(ends.indexOf(o.ay) !== -1) out += "<text x='" + cx + "' y='" + (y - 5) + "' text-anchor='middle' font-size='11' font-weight='600' fill='#2e1a5c'>" + fmt(o.sch) + "</text>";
+                out += "<rect x='" + (x0 + k * slot) + "' y='" + (top - 14) + "' width='" + slot + "' height='" + (base - top + 14) + "' fill='transparent'><title>" + esc(ayLabel(o.ay) + ": " + (o.count ? fmt(o.sch) + " SCH · " + plural(Math.round(o.count * 100) / 100, "course") + " · " + plural(o.students, "student") : "no courses")) + "</title></rect>";
+            });
+            return "<svg class='hist-chart' viewBox='0 0 " + W + " " + (base + 24) + "' role='img' aria-label='SCH each academic year'>" + out + "</svg>";
+        }
+        function renderHistory(){
+            var h = hist;
+            if(!h) return;
+            var found = historyNames(), names = found.names;
+            document.querySelectorAll("#history [data-group]").forEach(function(b){ b.classList.toggle("on", +b.getAttribute("data-group") === h.group); });
+            document.getElementById("hist-chips").innerHTML = Object.keys(names).sort().map(function(n){
+                return "<span class='chip" + (names[n] === "self" ? " self" : "") + "'>" + esc(n) + (names[n] === "self" ? "" : "<button type='button' data-drop='" + esc(n) + "' aria-label='Not " + esc(h.name) + ": leave out " + esc(n) + "' title='" + (names[n] === "added" ? "Added by you. " : "Another spelling of the name. ") + "Not the same person? Leave it out.'>×</button>") + "</span>";
+            }).join(" ");
+            document.getElementById("hist-all").innerHTML = found.all.filter(function(n){ return !names[n]; }).map(function(n){ return "<option value='" + esc(n) + "'>"; }).join("");
+            var ys = h.years.slice().sort(function(a, b){ return a - b; }).map(function(y){ return historyYear(y, names); });
+            var taught = ys.filter(function(o){ return o.count; });
+            var note = h.loading ? "Reading the Time Schedule, newest first: " + (h.years.length + h.partial.length ? "back to " + ayLabel(Math.min.apply(null, h.years.concat(h.partial))) + "…" : "…") : "";
+            if(!h.loading && h.partial.length) note = h.partial.map(ayLabel).join(", ") + " isn’t included until all of Autumn, Winter and Spring are published.";
+            if(h.errors.length) note = "Couldn’t read " + ayLabel(h.errors[0]) + ", so the history stops there. Still signed in to UW? Reload the Time Schedule, then FTECalc.";
+            var noteEl = document.getElementById("hist-note");
+            noteEl.textContent = note;
+            noteEl.classList.toggle("warn", !!h.errors.length);
+            var read = h.years.length ? ayLabel(ys[0].ay) + " to " + ayLabel(ys[ys.length - 1].ay) : "";
+            if(taught.length) ys = ys.filter(function(o){ return o.ay >= taught[0].ay && o.ay <= taught[taught.length - 1].ay; });
+            document.getElementById("hist-sub").innerHTML = esc(prefixes.join(", ")) + (taught.length ? " · " + ayLabel(ys[0].ay) + " to " + ayLabel(ys[ys.length - 1].ay) : "") + " · Autumn, Winter and Spring";
+            var body = document.getElementById("hist-body");
+            if(!taught.length){ body.innerHTML = h.loading ? "" : "<div class='empty'>No courses found for " + esc(h.name) + " in " + esc(prefixes.join(", ")) + (read ? ", " + read : "") + ".</div>"; return; }
+            var periods = [];
+            for(var i = ys.length; i > 0; i -= h.group) periods.unshift(ys.slice(Math.max(0, i - h.group), i));
+            var sum = function(list){
+                var p = { years: list, from: list[0].ay, to: list[list.length - 1].ay, taught: 0, count: 0, classes: 0, students: 0, sch: 0, fteYears: 0, allSch: 0, allFte: 0, courses: {}, off: [] };
+                list.forEach(function(o){
+                    if(o.count){ p.taught++; p.fteYears += o.fte; } else p.off.push(ayLabel(o.ay));
+                    ["count", "classes", "students", "sch", "allSch", "allFte"].forEach(function(k){ p[k] += o[k]; });
+                    o.courses.forEach(function(c){ p.courses[c] = (p.courses[c] || 0) + 1; });
+                });
+                p.label = p.from === p.to ? ayLabel(p.from) : p.from + "–" + String(p.to + 1).slice(2);
+                return p;
+            };
+            periods = periods.map(sum);
+            var all = sum(ys), two = function(x){ return Math.round(x * 100) / 100; };
+            var per = function(p){ var t = p.taught || 1; return { courses: p.count / t, students: p.students / t, avg: p.classes ? p.students / p.classes : 0, sch: p.sch / t, perFte: p.fteYears ? p.sch / p.fteYears : 0 }; };
+            var tiles = "";
+            if(periods.length > 1){
+                var a = per(periods[0]), b = per(periods[periods.length - 1]), first = periods[0].label, last = periods[periods.length - 1].label;
+                var tile = function(label, k, show, tip){
+                    var d = a[k] ? Math.round((b[k] - a[k]) / a[k] * 100) : null;
+                    return "<div class='tile' title='" + esc(tip + " " + first + " → " + last + ".") + "'><div class='tl'>" + label + "</div><div class='tv'>" + show(a[k]) + " → <b>" + show(b[k]) + "</b></div><div class='td'>" + (d === null ? "–" : d === 0 ? "no change" : (d > 0 ? "▲ " : "▼ ") + Math.abs(d) + "%") + "</div></div>";
+                };
+                tiles = "<div class='tiles-head'>" + first + " → " + last + ", per year taught</div><div class='tiles'>"
+                    + tile("Courses a year", "courses", two, "Courses each year they taught,") + tile("Students a year", "students", fmt, "Students each year they taught,")
+                    + tile("Average class", "avg", fmt, "Students per course; combined sections count as one class,") + tile("SCH a year", "sch", fmt, "Student credit hours each year they taught,")
+                    + tile("SCH per FTE", "perFte", fmt, "SCH ÷ their FTE in the years they taught,") + "</div>";
+            }
+            var cell = function(v){ return "<td class='n'>" + v + "</td>"; };
+            var row = function(p, total){
+                var list = Object.keys(p.courses).sort(function(x, y){ return x.localeCompare(y, "en", { numeric: true }); }).map(function(c){ return esc(c) + (p.courses[c] > 1 ? " ×" + p.courses[c] : ""); });
+                return "<tr class='" + (total ? "total" : p.taught ? "" : "off") + "'><td class='name'>" + (total ? "All, " + p.label : p.label) + "</td>"
+                    + (h.group > 1 ? cell(p.off.length ? "<span title='No courses in " + esc(andList(p.off)) + "'>" + p.taught + " of " + p.years.length + "</span>" : p.taught + " of " + p.years.length) : "")
+                    + (p.taught ? cell(two(p.count)) + cell(fmt(p.students)) + cell(p.classes ? fmt(p.students / p.classes) : "–") + cell(fmt(p.sch)) + cell(f2(p.fteYears / p.taught)) + cell(p.fteYears ? fmt(p.sch / p.fteYears) : "–")
+                        : cell("–") + cell("–") + cell("–") + cell("–") + cell("–") + cell("–"))
+                    + cell(p.allFte ? fmt(p.allSch / p.allFte) : "–") + "<td class='list'>" + (list.length ? list.join(" · ") : "No courses") + "</td></tr>";
+            };
+            body.innerHTML = tiles + historyChart(ys, periods)
+                + "<table class='hist-table'><thead><tr><th>" + (h.group > 1 ? "Period" : "Year") + "</th>" + (h.group > 1 ? "<th class='n'>Years<br>taught</th>" : "")
+                + "<th class='n'>Courses</th><th class='n'>Students</th><th class='n' title='Students per course; combined sections count as one class'>Avg<br>class</th><th class='n'>SCH</th>"
+                + "<th class='n' title='Their FTE, averaged over the years they taught'>FTE</th><th class='n'>SCH per<br>FTE</th>"
+                + "<th class='n' title='SCH per instructor FTE for everyone teaching in " + esc(prefixes.join(", ")) + " in the same years'>Everyone’s<br>SCH per FTE</th><th>Courses taught</th></tr></thead><tbody>"
+                + periods.map(function(p){ return row(p); }).join("") + (periods.length > 1 ? row(all, true) : "") + "</tbody></table>";
+        }
+
         /* ---- Events ---- */
         document.getElementById("ay").addEventListener("change", function(){ view.ay = +this.value; loadAll(); });
         document.getElementById("program").addEventListener("change", function(){ view.program = this.value; render(); });
@@ -583,7 +794,11 @@ javascript:(function(){
             }
         });
         document.getElementById("faculty").addEventListener("focusin", function(e){ if(e.target.matches("input.fte")) e.target.select(); });
-        document.getElementById("faculty").addEventListener("click", function(e){ var th = e.target.closest("th[data-sort]"); if(th){ view.facSort = th.getAttribute("data-sort"); render(); } });
+        document.getElementById("faculty").addEventListener("click", function(e){
+            var th = e.target.closest("th[data-sort]"), who = e.target.closest("[data-history]");
+            if(th){ view.facSort = th.getAttribute("data-sort"); render(); }
+            if(who) openHistory(who.getAttribute("data-history"));
+        });
         var settingsBtn = document.getElementById("settings-btn"), box = document.getElementById("settings");
         function showSettings(open){ if(open) renderSettings(); box.hidden = !open; settingsBtn.setAttribute("aria-expanded", String(open)); }
         settingsBtn.addEventListener("click", function(){ showSettings(box.hidden); });

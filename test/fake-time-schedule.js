@@ -80,6 +80,26 @@ const pages = {
     ],
   },
 };
+/* Six earlier years of PHIL, for a person's history (worked out in history.test.js). Alpha is spelled "PROF,ALPHA B" until
+   2022–23 and teaches nothing in 2021–22; Alphonse teaches one course in 2019–20. Before 2019 there are no pages. */
+for (let y = 2019; y <= 2024; y++) {
+  const k = y - 2019, alpha = y <= 2022 ? 'PROF,ALPHA B' : 'PROF,ALPHA', away = y === 2021;
+  const by = (who, course) => (away && who === alpha ? [] : [course]);
+  pages['AUT' + y] = { PHIL: [
+    ...by(alpha, ['100', 'INTRODUCTION TO PHILOSOPHY', '(A&H/SSc)', [['A', '5', 'MWF    1030-1120  SAV  264', alpha, 100 + 10 * k, 150]]]),
+    ['102', 'CONTEMPORARY MORAL PROBLEMS', '(A&H/SSc)', [['A', '5', 'TTh    1130-1320  KNE  120', 'PROF,GAMMA', 150, 160]]],
+    ['240', 'INTRODUCTION TO ETHICS', '(A&H/SSc)', [['A', '5', 'MWF    0930-1020  SMI  120', 'PROF,BETA', 90, 100]]],
+  ] };
+  pages['WIN' + (y + 1)] = { PHIL: [
+    ['120', 'INTRODUCTION TO LOGIC', '(NSc)', [['A', '5', 'MWF    1230-0120  KNE  210', 'PROF,GAMMA', 140, 150]]],
+    ...by(alpha, ['450', 'EPISTEMOLOGY', '(A&H)', [['A', '5', 'TTh    1330-1450  SAV  155', alpha, 20, 25]]]),
+  ] };
+  pages['SPR' + (y + 1)] = { PHIL: [
+    ...(y === 2019 ? [['115', 'PRACTICAL REASONING', '(SSc)', [['A', '5', 'TTh    1030-1220  SAV  260', 'PROF,ALPHONSE', 30, 40]]]] : []),
+    ['243', 'ENVIRONMENTAL ETHICS', '(A&H/SSc)', [['A', '5', 'MWF    1130-1220  SMI  205', 'PROF,GAMMA', 100, 100]]],
+    ...by(alpha, ['360', 'INTRODUCTION TO SYMBOLIC LOGIC', '(NSc)', [['A', '5', 'MWF    0830-0920  SAV  264', alpha, 60, 80]]]),
+  ] };
+}
 const FILES = { 'phil.html': 'PHIL', 'clas.html': 'CLAS' };
 
 /* The page for a quarter ("AUT2025") and file ("phil.html"), or null when there's none. */

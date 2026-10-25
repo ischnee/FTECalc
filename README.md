@@ -47,6 +47,7 @@ This short script loads the latest FTECalc from this repository each time you cl
 4. In **Faculty and instructors**, set each instructor's category once. FTECalc remembers it.
 5. Everyone counts 1 FTE. For someone part time, change their **FTE**, e.g. to `0.5` or `1/3`.
 6. To keep the results, click **Save**.
+7. For one person's teaching over the years, click their name.
 
 ## What it shows
 
@@ -54,6 +55,8 @@ It serves three purposes:
 - **Faculty teaching:** each instructor's FTE, courses and SCH.
 - **TA allocation:** students per TA, by course and quarter.
 - **Comparing programs:** how each program uses its teaching resources, e.g. SCH per FTE, who teaches the SCH, and cost per SCH.
+
+It can also show **one person's teaching history** across every year the Time Schedule has (see below).
 
 The page has:
 - **A summary:** SCH (with each quarter), instructional FTE by category, SCH per FTE (with and without TAs), and cost per SCH.
@@ -89,7 +92,7 @@ The unit is the academic year: Autumn, Winter and Spring.
 - **Categories.** The Time Schedule doesn't say who is faculty, a lecturer or a graduate student. You set each instructor's category in the Faculty table, and FTECalc keeps it in your browser. Categories split the FTE and SCH by kind of instructor; until they're set, people count under "Not set", and the summary says how many still need one.
 - **Name spellings.** Categories and FTEs are kept under the name as the Time Schedule spells it. When a middle initial comes or goes, the new spelling uses the old one's category and FTE until you change them.
 - **Co-taught courses** (instructors listed as `A/B`) count ½ to each of two instructors, ⅓ to each of three, and so on. Their SCH is split the same way. ⚙ can count the course in full for each instructor instead; the SCH is still split.
-- **The current year.** Until Winter and Spring are published, the year is partial and marked that way. The academic year menu goes back seven years.
+- **The current year.** Until Winter and Spring are published, the year is partial and marked that way. The academic year menu goes back seven years; a person's history goes back as far as the Time Schedule does.
 
 ## Student credit hours
 
@@ -121,11 +124,34 @@ This is the same estimate as in [TimeScheduleMod](https://github.com/ischnee/Tim
 
 Hover over a course's TA count to see the arithmetic.
 
+## A person's history
+
+Click an instructor's name in the Faculty table. FTECalc reads every academic year the Time Schedule has for the prefixes loaded, newest first, and stops after two years in a row with no pages. Pages already read aren't read again. It follows a colleague's one-page teaching history, without its salary half: salary isn't on the Time Schedule and stays out.
+
+- **The name.** The Time Schedule's spelling changes over the years, usually a middle initial. "Found as" lists every spelling with the same last and first name, e.g. "Smith, John" and "Smith, John A".
+  - **×** leaves out a spelling that's someone else.
+  - **Add another name** counts courses under a different name too, e.g. from before a name change. It suggests the names in the years read.
+  - These choices are remembered in your browser.
+- **Years.** Only whole academic years count: Autumn, Winter and Spring. Summer never counts, and the current year is left out until its Winter and Spring are published. The history runs from the first year the person taught to the last.
+- **Periods** of 1, 2 or 3 years, ending with the latest. FTECalc remembers the choice.
+- **The comparison:** the first period against the last, per year taught: courses, students, average class, SCH, and SCH per FTE, each with its % change. A year with no courses (a leave, say) doesn't pull the averages down.
+- **The chart:** SCH each year, on the periods' bands. Hover over a year for its courses and students.
+- **The table:** for each period:
+  - years taught (hover to see which years had no courses)
+  - courses, students, average class and SCH
+  - the person's FTE, averaged over the years taught, and SCH per FTE
+  - everyone's SCH per instructor FTE in the same years, for comparison
+  - the courses taught, e.g. "100 ×3 · 450/550"
+- **FTE by year.** The FTE is what the year view has for that person and year, so a change to 0.5 shows in every year it applies to. Change it in the year view.
+- **Print** gives a one-page report without the controls; choose "Save as PDF" in the print dialog to keep it.
+- A saved file has no histories: they need the Time Schedule.
+
 ## Privacy
 
 - **No student data.** FTECalc reads only the Time Schedule's section listings, which UW shows after sign-in.
 - **TA names are never stored or shown.** As each page loads, names are replaced with labels, and only counts appear.
 - **Instructors' FTEs are personnel information.** Instructors of record are listed on the Time Schedule. The categories, FTEs and budgets you enter are kept only in your browser.
+- **A person's history is about one colleague.** It uses only public teaching records, but share a printed history with care.
 
 ## Compared with Ben Marwick's Instructor Workload Dashboard
 
@@ -173,12 +199,13 @@ All settled (Sept 29, 2026):
 - **Saved results:** include both the totals and each instructor's teaching.
 - **Course releases** (Oct 1, 2026): a person's load could be changed for a year.
 - **One person, one FTE** (Oct 25, 2026): replaces the loads and course releases. Everyone counts 1 FTE unless changed; courses are noted but don't change FTE.
+- **A person's history** (Oct 25, 2026): every year the Time Schedule has, in periods of 1 to 3 years, with no salary.
 
 ## For maintainers
 
 - `bookmarklet-ftecalc.js` is the whole app. On a Time Schedule page it opens a new tab and writes the dashboard into it. The dashboard fetches each prefix's Autumn, Winter and Spring pages from the Time Schedule.
 - `node make-import.js` rebuilds `FTECalc.html` after a change.
-- `node --experimental-websocket test/run.js` runs the tests in headless Chrome. They use made-up PHIL and CLAS pages in the Time Schedule's format (`test/fake-time-schedule.js`), whose numbers were worked out by hand. They also run the file through a loader like the one above. Needs Node 20+ and Google Chrome.
+- `node --experimental-websocket test/run.js` runs the tests in headless Chrome. They use made-up PHIL and CLAS pages in the Time Schedule's format (`test/fake-time-schedule.js`), whose numbers were worked out by hand; PHIL goes back to 2019–20 for the history test. They also run the file through a loader like the one above. Needs Node 20+ and Google Chrome.
 - **Every push reaches every user.** Everyone using the loader runs whatever is on `main` the next time they click. Keep write access to people who need it, and protect those GitHub accounts with two-factor authentication.
 - **Send updates out right away.** jsDelivr keeps a copy of the file on its servers for up to 12 hours. About a minute after pushing, open `https://purge.jsdelivr.net/gh/ischnee/FTECalc@main/bookmarklet-ftecalc.js` once, and everyone gets the new version on their next click.
   - Wait the minute: purging in the first seconds after a push can put the old version straight back, before GitHub reports the new one.

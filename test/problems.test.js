@@ -36,6 +36,10 @@ module.exports = async (check, port) => {
     check('signed out: says which pages couldn’t be read, and what to do', r.status === 'Couldn’t read PHIL Aut, PHIL Win, PHIL Spr. Still signed in to UW? Reload the Time Schedule, then FTECalc.', r.status);
     check('signed out: the summary says so too', /Autumn 2024, Winter 2025 and Spring 2025 couldn’t be read/.test(r.summary[0].parts), r.summary[0].parts);
     await toggleSignedOut();
+    /* CLAS has no pages before 2025–26. */
+    await app.click('#chips .chip button');
+    await app.type('#prefix-input', 'clas');
+    await app.key('Enter', 'Enter', 13);
     await app.choose('#ay', '2020');
     await app.waitFor('!/Loading/.test(document.getElementById("load-status").textContent) && /No Time Schedule/.test(document.getElementById("summary").textContent)');
     r = await app.evaluate(READ);

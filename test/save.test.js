@@ -44,6 +44,7 @@ module.exports = async (check, port) => {
     const banner = await s.evaluate('document.querySelector(".saved-banner").textContent');
     check('a SAVED banner with the note and the year', /^SAVED10th day of Spring2025–26 · PHIL, CLAS · data as of .*Saved .* · numbers don’t update$/.test(banner), banner);
     check('one academic year, no prefix box, no Save', await s.evaluate('document.getElementById("ay").disabled && document.getElementById("ay").options.length === 1 && getComputedStyle(document.getElementById("prefix-input")).display === "none" && getComputedStyle(document.getElementById("save-btn")).display === "none"'));
+    check('a saved file has no teaching histories (they need the Time Schedule)', await s.evaluate('!document.querySelector("#faculty .who")'));
     check('the saved file keeps Alpha’s FTE', (await s.evaluate('document.querySelector(\'input.fte[data-fte="Prof, Alpha"]\').value')) === '0.50');
     check('the tab title says it’s saved', (await s.evaluate('document.title')) === 'FTECalc 2025–26 · saved · 10th day of Spring');
     await s.evaluate(`(() => { const i = document.querySelector('select.cat[data-person="Prof, Beta"]'); i.value = "teach"; i.dispatchEvent(new Event("change", { bubbles: true })); })()`);
